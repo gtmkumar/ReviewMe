@@ -1,0 +1,102 @@
+{
+  "name": "ReviewMe - Professional Profile Platform",
+  "short_name": "ReviewMe",
+  "description": "Analyze and optimize your professional profile across GitHub, LinkedIn, and resume with AI-powered insights",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Upload Resume",
+      "short_name": "Resume",
+      "description": "Upload and analyze your resume",
+      "url": "/dashboard/resume",
+      "icons": [
+        {
+          "src": "/icons/resume-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Connect GitHub",
+      "short_name": "GitHub",
+      "description": "Connect your GitHub profile",
+      "url": "/dashboard/integrations/github",
+      "icons": [
+        {
+          "src": "/icons/github-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Profile Score",
+      "short_name": "Score",
+      "description": "Check your profile score",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/score-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "categories": ["productivity", "business", "education"],
+  "lang": "en-US",
+  "dir": "ltr"
+}
