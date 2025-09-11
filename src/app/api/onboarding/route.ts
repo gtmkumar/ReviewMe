@@ -42,12 +42,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Initialize database connection
-    const db = getDbManager(process.env.MONGODB_URI!);
-    await db.connect();
+    // Get the database manager instance - connection is handled once at startup
+    const db = getDbManager();
 
     // Find user by email
-    const user = await db.users.findOne({ 
+    const database = await db.getDb();
+    const user = await database.collection('users').findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -89,12 +89,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = onboardingSchema.parse(body);
 
-    // Initialize database connection
-    const db = getDbManager(process.env.MONGODB_URI!);
-    await db.connect();
+    // Get the database manager instance - connection is handled once at startup
+    const db = getDbManager();
 
     // Find user by email
-    const user = await db.users.findOne({ 
+    const database = await db.getDb();
+    const user = await database.collection('users').findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -106,7 +106,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user with onboarding data
-    const updateResult = await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    const updateResult = await usersCollection.updateOne(
       { _id: user._id },
       {
         $set: {
@@ -134,7 +135,8 @@ export async function POST(request: NextRequest) {
 
     // Update preferences if provided
     if (validatedData.preferences) {
-      await db.preferences.updateOne(
+      const preferencesCollection = await db.getPreferencesCollection();
+      await preferencesCollection.updateOne(
         { userId: user._id.toString() },
         {
           $set: {
@@ -199,12 +201,12 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const validatedData = onboardingSchema.partial().parse(body);
 
-    // Initialize database connection
-    const db = getDbManager(process.env.MONGODB_URI!);
-    await db.connect();
+    // Get the database manager instance - connection is handled once at startup
+    const db = getDbManager();
 
     // Find user by email
-    const user = await db.users.findOne({ 
+    const database = await db.getDb();
+    const user = await database.collection('users').findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -236,7 +238,8 @@ export async function PATCH(request: NextRequest) {
 
     updateFields.updatedAt = new Date();
 
-    const updateResult = await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    const updateResult = await usersCollection.updateOne(
       { _id: user._id },
       { $set: updateFields }
     );

@@ -14,7 +14,8 @@ export async function GET(
     await db.connect();
 
     // Find user by public username
-    const user = await db.users.findOne({ 
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ 
       publicUsername,
       profilePublic: true // Only return public profiles
     });

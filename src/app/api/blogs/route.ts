@@ -141,7 +141,8 @@ export async function POST(request: NextRequest) {
     await db.connect();
 
     // Find user
-    const user = await db.users.findOne({ 
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -164,7 +165,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Save blog data to database
-      await db.blogs.updateOne(
+      const blogsCollection = await db.getBlogsCollection();
+      await blogsCollection.updateOne(
         { userId, platform },
         {
           $set: {
@@ -197,7 +199,8 @@ export async function POST(request: NextRequest) {
 
     } catch (fetchError: any) {
       // Save error status to database
-      await db.blogs.updateOne(
+      const blogsCollection = await db.getBlogsCollection();
+      await blogsCollection.updateOne(
         { userId, platform },
         {
           $set: {
@@ -260,7 +263,8 @@ export async function GET(request: NextRequest) {
     await db.connect();
 
     // Find user
-    const user = await db.users.findOne({ 
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -272,7 +276,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all blog data for user
-    const blogs = await db.blogs.find({ userId: user._id.toString() }).toArray();
+    const blogsCollection = await db.getBlogsCollection();
+    const blogs = await blogsCollection.find({ userId: user._id.toString() }).toArray();
 
     return NextResponse.json({ blogs });
 

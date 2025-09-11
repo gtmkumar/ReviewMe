@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
     await db.connect();
 
     // Check if user already exists
-    const existingUser = await db.users.findOne({
+    const usersCollection = await db.getUsersCollection();
+    const existingUser = await usersCollection.findOne({
       email: email.toLowerCase()
     });
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     const publicUsername = await PublicUsernameService.createUniquePublicUsername(firstName, lastName);
 
     // Create user
-    const result = await db.users.insertOne({
+    const result = await usersCollection.insertOne({
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
@@ -81,7 +82,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Initialize user profile
-    await db.profiles.insertOne({
+    const profilesCollection = await db.getProfilesCollection();
+    await profilesCollection.insertOne({
       userId,
       profileScore: 0,
       lastAnalyzed: undefined,
@@ -94,7 +96,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Initialize user preferences
-    await db.preferences.insertOne({
+    const preferencesCollection = await db.getPreferencesCollection();
+    await preferencesCollection.insertOne({
       userId,
       theme: 'system',
       notifications: {

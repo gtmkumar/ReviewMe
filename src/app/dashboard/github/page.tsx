@@ -12,6 +12,14 @@ import {
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
+import { CreditManager } from '@/components/credit-manager';
+
+// Global type declaration for window function
+declare global {
+  interface Window {
+    showReferralModal?: () => void;
+  }
+}
 
 interface GitHubProfile {
   login: string;
@@ -380,13 +388,20 @@ export default function GitHubPage() {
                 <div className="flex items-center space-x-3">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                   <div>
-                    <h3 className="text-red-800 font-medium">You're low on credits!</h3>
+                    <h3 className="text-red-800 font-medium">You&apos;re low on credits!</h3>
                     <p className="text-red-700 text-sm">
                       You have {credits} credits remaining. Consider referring friends to earn more.
                     </p>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.showReferralModal) {
+                      window.showReferralModal();
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
                   <Zap className="h-4 w-4 inline mr-2" />
                   Earn 200 Credits
                 </button>
@@ -687,6 +702,8 @@ export default function GitHubPage() {
           )}
         </div>
       </main>
+      {/* Credit Manager (handles notifications and referrals) */}
+      <CreditManager />
     </div>
   );
 }

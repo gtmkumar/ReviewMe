@@ -29,6 +29,9 @@ export class PublicUsernameService {
 
   static async createUniquePublicUsername(firstName: string, lastName: string): Promise<string> {
     const db = getDbManager();
+    await db.connect();
+    const usersCollection = await db.getUsersCollection();
+    
     let attempts = 0;
     const maxAttempts = 10;
     
@@ -36,7 +39,7 @@ export class PublicUsernameService {
       const publicUsername = this.generatePublicUsername(firstName, lastName);
       
       // Check if username already exists
-      const existingUser = await db.users.findOne({ publicUsername });
+      const existingUser = await usersCollection.findOne({ publicUsername });
       if (!existingUser) {
         return publicUsername;
       }
@@ -52,17 +55,79 @@ export class PublicUsernameService {
 
 // Credit Management Service
 export class CreditService {
+  
+  static async checkAndDeductCredits(userId: string, serviceType: ServiceType, payload: any): Promise<{
+    success: boolean;
+    error?: string;
+    requestId?: string;
+    creditsDeducted?: number;
+    remainingCredits?: number;
+  }> {
+    try {
+      const db = getDbManager();
+      await db.connect();
+      
+      // Get current credits
+      const currentCredits = await this.getUserCredits(userId);
+      const cost = CREDIT_COSTS[serviceType];
+      
+      // Check if user has enough credits
+      if (currentCredits < cost) {
+        return {
+          success: false,
+          error: `Insufficient credits. You need ${cost} credits for this service, but you only have ${currentCredits}.`
+        };
+      }
+      
+      // Log the request first
+      const requestId = await RequestLogService.logRequest(userId, serviceType, payload, cost);
+      
+      // Deduct credits
+      const deductionSuccess = await this.deductCredits(userId, serviceType);
+      if (!deductionSuccess) {
+        await RequestLogService.updateRequestStatus(requestId, 'failed', 'Failed to deduct credits');
+        return {
+          success: false,
+          error: 'Failed to deduct credits'
+        };
+      }
+      
+      // Get remaining credits
+      const remainingCredits = await this.getUserCredits(userId);
+      
+      // Update request status to processing
+      await RequestLogService.updateRequestStatus(requestId, 'processing');
+      
+      return {
+        success: true,
+        requestId,
+        creditsDeducted: cost,
+        remainingCredits
+      };
+    } catch (error) {
+      console.error('Error in checkAndDeductCredits:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
   static async getUserCredits(userId: string): Promise<number> {
     const db = getDbManager();
-    const user = await db.users.findOne({ _id: new ObjectId(userId) });
+    await db.connect();
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
     return user?.credits || 0;
   }
 
   static async deductCredits(userId: string, serviceType: ServiceType): Promise<boolean> {
     const db = getDbManager();
+    await db.connect();
+    const usersCollection = await db.getUsersCollection();
     const cost = CREDIT_COSTS[serviceType];
     
-    const result = await db.users.updateOne(
+    const result = await usersCollection.updateOne(
       { 
         _id: new ObjectId(userId), 
         credits: { $gte: cost } 
@@ -78,8 +143,11 @@ export class CreditService {
 
   static async addCredits(userId: string, amount: number, reason: string = 'manual'): Promise<void> {
     const db = getDbManager();
+    await db.connect();
+    const usersCollection = await db.getUsersCollection();
+    const userActivitiesCollection = await db.getUserActivitiesCollection();
     
-    await db.users.updateOne(
+    await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
       { 
         $inc: { credits: amount },
@@ -88,7 +156,7 @@ export class CreditService {
     );
 
     // Log the credit addition
-    await db.userActivities.insertOne({
+    await userActivitiesCollection.insertOne({
       userId,
       sessionId: 'system',
       actionType: 'api_request',
@@ -116,6 +184,9 @@ export class RequestLogService {
     creditsDeducted: number
   ): Promise<string> {
     const db = getDbManager();
+    await db.connect();
+    const userRequestsCollection = await db.getUserRequestsCollection();
+    const usersCollection = await db.getUsersCollection();
     
     const request: UserRequestDocument = {
       userId,
@@ -126,11 +197,11 @@ export class RequestLogService {
       createdAt: new Date()
     };
 
-    const result = await db.userRequests.insertOne(request);
+    const result = await userRequestsCollection.insertOne(request);
     
     // Update user request count
     const updateField = `requestCounts.${serviceType}`;
-    await db.users.updateOne(
+    await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
       { 
         $inc: { [updateField]: 1 },
@@ -147,6 +218,8 @@ export class RequestLogService {
     errorMessage?: string
   ): Promise<void> {
     const db = getDbManager();
+    await db.connect();
+    const userRequestsCollection = await db.getUserRequestsCollection();
     
     const updateData: any = {
       status,
@@ -154,7 +227,7 @@ export class RequestLogService {
       ...(errorMessage ? { errorMessage } : {})
     };
 
-    await db.userRequests.updateOne(
+    await userRequestsCollection.updateOne(
       { _id: new ObjectId(requestId) },
       { $set: updateData }
     );
@@ -169,6 +242,8 @@ export class RequestLogService {
     processingTime: number = 0
   ): Promise<void> {
     const db = getDbManager();
+    await db.connect();
+    const serviceResponsesCollection = await db.getServiceResponsesCollection();
     
     const response: ServiceResponseDocument = {
       userId,
@@ -180,7 +255,7 @@ export class RequestLogService {
       createdAt: new Date()
     };
 
-    await db.serviceResponses.insertOne(response);
+    await serviceResponsesCollection.insertOne(response);
   }
 
   static async getUserRequestHistory(
@@ -189,13 +264,17 @@ export class RequestLogService {
     limit: number = 50
   ): Promise<(UserRequestDocument & { response?: ServiceResponseDocument })[]> {
     const db = getDbManager();
+    await db.connect();
+    
+    const userRequestsCollection = await db.getUserRequestsCollection();
+    const serviceResponsesCollection = await db.getServiceResponsesCollection();
     
     const filter: any = { userId };
     if (serviceType) {
       filter.serviceType = serviceType;
     }
 
-    const requests = await db.userRequests
+    const requests = await userRequestsCollection
       .find(filter)
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -204,7 +283,7 @@ export class RequestLogService {
     // Fetch corresponding responses
     const requestsWithResponses = await Promise.all(
       requests.map(async (request) => {
-        const response = await db.serviceResponses.findOne({ 
+        const response = await serviceResponsesCollection.findOne({ 
           requestId: request._id!.toString() 
         });
         return { ...request, response };
@@ -222,12 +301,16 @@ export class RequestLogService {
     lastRequestDate?: Date;
   }> {
     const db = getDbManager();
+    await db.connect();
     
-    const requests = await db.userRequests
+    const userRequestsCollection = await db.getUserRequestsCollection();
+    const serviceResponsesCollection = await db.getServiceResponsesCollection();
+    
+    const requests = await userRequestsCollection
       .find({ userId, serviceType })
       .toArray();
 
-    const responses = await db.serviceResponses
+    const responses = await serviceResponsesCollection
       .find({ userId, serviceType })
       .toArray();
 
@@ -261,6 +344,9 @@ export class AnalyticsService {
     metadata?: any
   ): Promise<void> {
     const db = getDbManager();
+    await db.connect();
+    
+    const userActivitiesCollection = await db.getUserActivitiesCollection();
     
     const activity: UserActivityDocument = {
       userId,
@@ -270,7 +356,7 @@ export class AnalyticsService {
       timestamp: new Date()
     };
 
-    await db.userActivities.insertOne(activity);
+    await userActivitiesCollection.insertOne(activity);
   }
 
   static async trackPageView(
@@ -311,11 +397,14 @@ export class AnalyticsService {
     activityByDay: Array<{ date: string; activities: number }>;
   }> {
     const db = getDbManager();
+    await db.connect();
+    
+    const userActivitiesCollection = await db.getUserActivitiesCollection();
     
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const activities = await db.userActivities
+    const activities = await userActivitiesCollection
       .find({ 
         userId, 
         timestamp: { $gte: startDate } 
@@ -394,7 +483,8 @@ export class ReferralService {
     const db = getDbManager();
     
     // Check if user already has a referral code
-    const user = await db.users.findOne({ _id: new ObjectId(userId) });
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
     if (user?.referralCode) {
       return user.referralCode;
     }
@@ -402,12 +492,12 @@ export class ReferralService {
     let referralCode = this.generateReferralCode();
     
     // Ensure uniqueness
-    while (await db.users.findOne({ referralCode })) {
+    while (await usersCollection.findOne({ referralCode })) {
       referralCode = this.generateReferralCode();
     }
 
     // Update user with referral code
-    await db.users.updateOne(
+    await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
       { 
         $set: { 
@@ -424,7 +514,8 @@ export class ReferralService {
     const db = getDbManager();
     
     // Find the referrer
-    const referrer = await db.users.findOne({ referralCode });
+    const usersCollection = await db.getUsersCollection();
+    const referrer = await usersCollection.findOne({ referralCode });
     if (!referrer) {
       return null;
     }
@@ -440,7 +531,8 @@ export class ReferralService {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
     };
 
-    const result = await db.referrals.insertOne(referral);
+    const referralsCollection = await db.getReferralsCollection();
+    const result = await referralsCollection.insertOne(referral);
     return result.insertedId.toString();
   }
 
@@ -448,7 +540,8 @@ export class ReferralService {
     const db = getDbManager();
     
     // Find pending referral
-    const referral = await db.referrals.findOne({ 
+    const referralsCollection = await db.getReferralsCollection();
+    const referral = await referralsCollection.findOne({ 
       email, 
       status: 'pending',
       expiresAt: { $gt: new Date() }
@@ -457,7 +550,7 @@ export class ReferralService {
     if (!referral) return;
 
     // Update referral status
-    await db.referrals.updateOne(
+    await referralsCollection.updateOne(
       { _id: referral._id },
       {
         $set: {
@@ -484,7 +577,8 @@ export class ReferralService {
     );
 
     // Update referrer's total referrals count
-    await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    await usersCollection.updateOne(
       { _id: new ObjectId(referral.referrerId) },
       { 
         $inc: { totalReferrals: 1 },
@@ -493,7 +587,7 @@ export class ReferralService {
     );
 
     // Update referred user
-    await db.users.updateOne(
+    await usersCollection.updateOne(
       { _id: new ObjectId(newUserId) },
       {
         $set: {
@@ -518,10 +612,12 @@ export class ReferralService {
   }> {
     const db = getDbManager();
     
-    const user = await db.users.findOne({ _id: new ObjectId(userId) });
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
     const referralCode = user?.referralCode || await this.createReferralCode(userId);
     
-    const referrals = await db.referrals
+    const referralsCollection = await db.getReferralsCollection();
+    const referrals = await referralsCollection
       .find({ referrerId: userId })
       .sort({ createdAt: -1 })
       .toArray();
@@ -553,7 +649,8 @@ export class DataCacheService {
     const db = getDbManager();
     
     // Get the most recent successful response for this service
-    const response = await db.serviceResponses
+    const serviceResponsesCollection = await db.getServiceResponsesCollection();
+    const response = await serviceResponsesCollection
       .findOne(
         { 
           userId, 

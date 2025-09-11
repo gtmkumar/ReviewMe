@@ -483,12 +483,26 @@ export class RecommendationEngine {
   private async fetchUserData(userId: string): Promise<UserAnalysisData> {
     await this.db.connect();
 
+    const [
+      profilesCollection,
+      integrationsCollection,
+      repositoriesCollection,
+      documentsCollection,
+      analyticsCollection
+    ] = await Promise.all([
+      this.db.getProfilesCollection(),
+      this.db.getIntegrationsCollection(),
+      this.db.getRepositoriesCollection(),
+      this.db.getDocumentsCollection(),
+      this.db.getAnalyticsCollection()
+    ]);
+    
     const [profile, integrations, repositories, documents, analytics] = await Promise.all([
-      this.db.profiles.findOne({ userId }),
-      this.db.integrations.find({ userId }).toArray(),
-      this.db.repositories.find({ userId }).toArray(),
-      this.db.documents.find({ userId }).toArray(),
-      this.db.analytics.find({ userId }).sort({ date: -1 }).limit(10).toArray(),
+      profilesCollection.findOne({ userId }),
+      integrationsCollection.find({ userId }).toArray(),
+      repositoriesCollection.find({ userId }).toArray(),
+      documentsCollection.find({ userId }).toArray(),
+      analyticsCollection.find({ userId }).sort({ date: -1 }).limit(10).toArray(),
     ]);
 
     return {
@@ -517,7 +531,8 @@ export class RecommendationEngine {
       await this.db.connect();
 
       // Remove old non-completed recommendations
-      await this.db.recommendations.deleteMany({
+      const recommendationsCollection = await this.db.getRecommendationsCollection();
+      await recommendationsCollection.deleteMany({
         userId,
         isCompleted: false,
         isDismissed: false,
@@ -528,7 +543,8 @@ export class RecommendationEngine {
 
       // Insert new recommendations
       if (newRecommendations.length > 0) {
-        await this.db.recommendations.insertMany(newRecommendations);
+        const recommendationsCollection = await this.db.getRecommendationsCollection();
+        await recommendationsCollection.insertMany(newRecommendations);
       }
 
       console.log(`Updated ${newRecommendations.length} recommendations for user ${userId}`);
@@ -558,7 +574,8 @@ export class RecommendationEngine {
         filter.isDismissed = false;
       }
 
-      let query = this.db.recommendations.find(filter)
+      const recommendationsCollection = await this.db.getRecommendationsCollection();
+      let query = recommendationsCollection.find(filter)
         .sort({ priority: -1, impactScore: -1, createdAt: -1 });
 
       if (options.limit) {
@@ -576,7 +593,8 @@ export class RecommendationEngine {
     try {
       await this.db.connect();
 
-      await this.db.recommendations.updateOne(
+      const recommendationsCollection = await this.db.getRecommendationsCollection();
+      await recommendationsCollection.updateOne(
         { _id: recommendationId, userId },
         {
           $set: {
@@ -598,7 +616,8 @@ export class RecommendationEngine {
     try {
       await this.db.connect();
 
-      await this.db.recommendations.updateOne(
+      const recommendationsCollection = await this.db.getRecommendationsCollection();
+      await recommendationsCollection.updateOne(
         { _id: recommendationId, userId },
         {
           $set: {
@@ -616,7 +635,8 @@ export class RecommendationEngine {
     try {
       await this.db.connect();
 
-      await this.db.recommendations.updateOne(
+      const recommendationsCollection = await this.db.getRecommendationsCollection();
+      await recommendationsCollection.updateOne(
         { _id: recommendationId, userId, 'actionItems.id': actionItemId },
         {
           $set: {
@@ -626,7 +646,7 @@ export class RecommendationEngine {
       );
 
       // Check if all action items are completed
-      const recommendation = await this.db.recommendations.findOne({
+      const recommendation = await recommendationsCollection.findOne({
         _id: recommendationId,
         userId
       });

@@ -611,8 +611,15 @@ export class ResumeParsingService {
       // Calculate score
       const score = this.calculateResumeScore(parsedResume);
 
+      // Connect to database
+      await this.db.connect();
+      
+      // Get collections
+      const profilesCollection = await this.db.getProfilesCollection();
+      const documentsCollection = await this.db.getDocumentsCollection();
+
       // Update user profile in database
-      await this.db.profiles.updateOne(
+      await profilesCollection.updateOne(
         { userId },
         {
           $set: {
@@ -630,7 +637,7 @@ export class ResumeParsingService {
       );
 
       // Update document status
-      await this.db.documents.updateOne(
+      await documentsCollection.updateOne(
         { userId, fileName, type: 'resume' },
         {
           $set: {
@@ -646,8 +653,14 @@ export class ResumeParsingService {
     } catch (error) {
       console.error('Error processing resume:', error);
       
+      // Connect to database
+      await this.db.connect();
+      
+      // Get documents collection
+      const documentsCollection = await this.db.getDocumentsCollection();
+      
       // Update document status to error
-      await this.db.documents.updateOne(
+      await documentsCollection.updateOne(
         { userId, fileName, type: 'resume' },
         {
           $set: {

@@ -23,14 +23,14 @@ describe('/api/github/sync', () => {
     // Mock database
     mockDb = {
       connect: jest.fn(),
-      integrations: {
+      getIntegrationsCollection: jest.fn().mockResolvedValue({
         findOne: jest.fn(),
         updateOne: jest.fn(),
-      },
-      profiles: {
+      }),
+      getProfilesCollection: jest.fn().mockResolvedValue({
         findOne: jest.fn(),
-      },
-      repositories: {
+      }),
+      getRepositoriesCollection: jest.fn().mockResolvedValue({
         find: jest.fn(() => ({
           sort: jest.fn(() => ({
             limit: jest.fn(() => ({
@@ -38,7 +38,7 @@ describe('/api/github/sync', () => {
             })),
           })),
         })),
-      },
+      }),
     };
 
     mockGetDbManager.mockReturnValue(mockDb);
@@ -61,12 +61,15 @@ describe('/api/github/sync', () => {
 
       mockGetServerSession.mockResolvedValue(mockSession as any);
       
-      mockDb.integrations.findOne.mockResolvedValue({
-        accessToken: 'test-token',
-      });
+      const mockIntegrationsCollection = {
+        findOne: jest.fn().mockResolvedValue({
+          accessToken: 'test-token',
+        }),
+        updateOne: jest.fn().mockResolvedValue({ acknowledged: true })
+      };
+      mockDb.getIntegrationsCollection.mockResolvedValue(mockIntegrationsCollection);
 
       mockGitHubService.syncUserData.mockResolvedValue();
-      mockDb.integrations.updateOne.mockResolvedValue({ acknowledged: true });
 
       const request = new NextRequest('http://localhost:3000/api/github/sync', {
         method: 'POST',
@@ -126,7 +129,11 @@ describe('/api/github/sync', () => {
       };
 
       mockGetServerSession.mockResolvedValue(mockSession as any);
-      mockDb.integrations.findOne.mockResolvedValue(null);
+      const mockIntegrationsCollection = {
+        findOne: jest.fn().mockResolvedValue(null),
+        updateOne: jest.fn()
+      };
+      mockDb.getIntegrationsCollection.mockResolvedValue(mockIntegrationsCollection);
       mockGitHubService.syncUserData.mockRejectedValue(new Error('Sync failed'));
 
       const request = new NextRequest('http://localhost:3000/api/github/sync', {
@@ -169,9 +176,27 @@ describe('/api/github/sync', () => {
       ];
 
       mockGetServerSession.mockResolvedValue(mockSession as any);
-      mockDb.profiles.findOne.mockResolvedValue(mockProfile);
-      mockDb.integrations.findOne.mockResolvedValue(mockIntegration);
-      mockDb.repositories.find().sort().limit().toArray.mockResolvedValue(mockRepositories);
+      
+      const mockProfilesCollection = {
+        findOne: jest.fn().mockResolvedValue(mockProfile)
+      };
+      mockDb.getProfilesCollection.mockResolvedValue(mockProfilesCollection);
+      
+      const mockIntegrationsCollection = {
+        findOne: jest.fn().mockResolvedValue(mockIntegration)
+      };
+      mockDb.getIntegrationsCollection.mockResolvedValue(mockIntegrationsCollection);
+      
+      const mockRepositoriesCollection = {
+        find: jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            limit: jest.fn().mockReturnValue({
+              toArray: jest.fn().mockResolvedValue(mockRepositories)
+            })
+          })
+        })
+      };
+      mockDb.getRepositoriesCollection.mockResolvedValue(mockRepositoriesCollection);
 
       const request = new NextRequest('http://localhost:3000/api/github/sync', {
         method: 'GET',
@@ -207,7 +232,11 @@ describe('/api/github/sync', () => {
       };
 
       mockGetServerSession.mockResolvedValue(mockSession as any);
-      mockDb.profiles.findOne.mockRejectedValue(new Error('Database error'));
+      
+      const mockProfilesCollection = {
+        findOne: jest.fn().mockRejectedValue(new Error('Database error'))
+      };
+      mockDb.getProfilesCollection.mockResolvedValue(mockProfilesCollection);
 
       const request = new NextRequest('http://localhost:3000/api/github/sync', {
         method: 'GET',

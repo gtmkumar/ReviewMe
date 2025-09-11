@@ -597,7 +597,8 @@ export class LinkedInService {
       const score = this.calculateLinkedInScore(parsedProfile);
 
       // Update user profile in database
-      await this.db.profiles.updateOne(
+      const profilesCollection = await this.db.getProfilesCollection();
+      await profilesCollection.updateOne(
         { userId },
         {
           $set: {
@@ -619,7 +620,8 @@ export class LinkedInService {
       );
 
       // Update document status
-      await this.db.documents.updateOne(
+      const documentsCollection = await this.db.getDocumentsCollection();
+      await documentsCollection.updateOne(
         { userId, fileName, type: 'linkedin' },
         {
           $set: {
@@ -636,7 +638,8 @@ export class LinkedInService {
       console.error('Error processing LinkedIn profile:', error);
       
       // Update document status to error
-      await this.db.documents.updateOne(
+      const documentsCollection = await this.db.getDocumentsCollection();
+      await documentsCollection.updateOne(
         { userId, fileName, type: 'linkedin' },
         {
           $set: {

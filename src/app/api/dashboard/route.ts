@@ -12,9 +12,29 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const db = getDbManager(process.env.MONGODB_URI!);
-    await db.connect();
+    // Get the database manager instance - connection is handled once at startup
+    const db = getDbManager();
+    const database = await db.getDb();
 
+    // Fetch all user data in parallel
+    const [
+      profilesCollection,
+      repositoriesCollection,
+      userRequestsCollection,
+      serviceResponsesCollection,
+      recommendationsCollection,
+      blogsCollection,
+      preferencesCollection
+    ] = await Promise.all([
+      db.getProfilesCollection(),
+      db.getRepositoriesCollection(),
+      db.getUserRequestsCollection(),
+      db.getServiceResponsesCollection(),
+      db.getRecommendationsCollection(),
+      db.getBlogsCollection(),
+      db.getPreferencesCollection()
+    ]);
+    
     // Fetch all user data in parallel
     const [
       userProfile,
@@ -25,13 +45,13 @@ export async function GET(request: NextRequest) {
       blogDocuments,
       preferences
     ] = await Promise.all([
-      db.profiles.findOne({ userId }),
-      db.repositories.find({ userId }).toArray(),
-      db.userRequests.find({ userId }).toArray(),
-      db.serviceResponses.find({ userId }).toArray(),
-      db.recommendations.find({ userId, isCompleted: false, isDismissed: false }).toArray(),
-      db.blogs.find({ userId }).toArray(),
-      db.preferences.findOne({ userId })
+      profilesCollection.findOne({ userId }),
+      repositoriesCollection.find({ userId }).toArray(),
+      userRequestsCollection.find({ userId }).toArray(),
+      serviceResponsesCollection.find({ userId }).toArray(),
+      recommendationsCollection.find({ userId, isCompleted: false, isDismissed: false }).limit(5).toArray(),
+      blogsCollection.find({ userId }).sort({ createdAt: -1 }).limit(5).toArray(),
+      preferencesCollection.findOne({ userId })
     ]);
 
     // Calculate scores

@@ -101,7 +101,8 @@ export async function POST(request: NextRequest) {
       });
 
       // Store transaction in database for user history
-      await db.getDb().collection('credit_transactions').insertOne({
+      const creditTransactionsCollection = await db.getCreditTransactionsCollection();
+      await creditTransactionsCollection.insertOne({
         ...transactionDetails,
         createdAt: new Date(),
         status: 'completed'

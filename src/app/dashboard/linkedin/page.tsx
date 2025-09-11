@@ -8,10 +8,18 @@ import {
   Linkedin, User, Briefcase, GraduationCap, Users, 
   MapPin, ExternalLink, Search, RefreshCw, AlertCircle, 
   CheckCircle, Trophy, TrendingUp, Award, Building,
-  Calendar, Link as LinkIcon, Upload, FileText, CreditCard, History
+  Calendar, Link as LinkIcon, Upload, FileText, CreditCard, History, Gift
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
+import { CreditManager } from '@/components/credit-manager';
+
+// Global type declaration for window function
+declare global {
+  interface Window {
+    showReferralModal?: () => void;
+  }
+}
 
 interface LinkedInProfile {
   name: string;
@@ -43,6 +51,7 @@ export default function LinkedInPage() {
   const [profile, setProfile] = useState<LinkedInProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [analysisMethod, setAnalysisMethod] = useState<'url' | 'manual'>('url');
   const [credits, setCredits] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -113,6 +122,7 @@ export default function LinkedInPage() {
       const requiredCredits = creditCheckData.costs.linkedin;
       if (creditCheckData.credits < requiredCredits) {
         setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
+        setShowInsufficientCreditsModal(true);
         setShowCreditWarning(true);
         return;
       }
@@ -289,6 +299,7 @@ export default function LinkedInPage() {
       const requiredCredits = creditCheckData.costs.linkedin;
       if (creditCheckData.credits < requiredCredits) {
         setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
+        setShowInsufficientCreditsModal(true);
         setShowCreditWarning(true);
         return;
       }
@@ -491,6 +502,15 @@ export default function LinkedInPage() {
               </div>
               
               <div className="flex items-center space-x-4">
+                {/* RedactAI Analysis Button */}
+                <Link 
+                  href="/dashboard/linkedin/analysis"
+                  className="flex items-center space-x-2 px-4 py-2 bg-linkedin text-white rounded-lg hover:bg-linkedin/90 transition-colors text-sm font-medium"
+                >
+                  <Search className="h-4 w-4" />
+                  <span>RedactAI Analysis</span>
+                </Link>
+                
                 {/* History Button */}
                 <Link 
                   href="/dashboard/linkedin/history"
@@ -729,8 +749,22 @@ export default function LinkedInPage() {
               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
                 <div className="flex">
                   <AlertCircle className="h-5 w-5 text-red-400" />
-                  <div className="ml-3">
+                  <div className="ml-3 flex-1">
                     <p className="text-sm text-red-800">{error}</p>
+                    {showInsufficientCreditsModal && (
+                      <button 
+                        onClick={() => {
+                          if (typeof window !== 'undefined' && window.showReferralModal) {
+                            window.showReferralModal();
+                          }
+                          setShowInsufficientCreditsModal(false);
+                        }}
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm inline-flex items-center space-x-2"
+                      >
+                        <Gift className="h-4 w-4" />
+                        <span>Earn 200 Credits - Refer Friends</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -765,6 +799,94 @@ export default function LinkedInPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* RedactAI Analyses Section */}
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-linkedin/10 rounded-lg flex items-center justify-center">
+                  <Search className="h-4 w-4 text-linkedin" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">RedactAI Profile Analysis</h3>
+              </div>
+              <Link 
+                href="/dashboard/linkedin/analysis"
+                className="text-linkedin hover:text-linkedin/80 text-sm font-medium"
+              >
+                View All Analyses →
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Analysis Card 1 - Sample */}
+              <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Linkedin className="h-5 w-5 text-linkedin" />
+                    <span className="font-medium text-gray-900">Advanced Analysis</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Ready</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Get AI-powered insights, optimization suggestions, and detailed analysis of your LinkedIn profile.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">15 credits</span>
+                  <Link 
+                    href="/dashboard/linkedin/analysis"
+                    className="text-linkedin hover:text-linkedin/80 text-sm font-medium"
+                  >
+                    Start Analysis
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Analysis Card 2 - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-5 w-5 text-gray-400" />
+                    <span className="font-medium text-gray-600">Network Analysis</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Soon</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Analyze your professional network connections and identify growth opportunities.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">20 credits</span>
+                  <span className="text-gray-400 text-sm">Coming Soon</span>
+                </div>
+              </div>
+              
+              {/* Analysis Card 3 - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5 text-gray-400" />
+                    <span className="font-medium text-gray-600">Performance Tracking</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Soon</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Track profile views, engagement metrics, and optimization progress over time.
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">10 credits</span>
+                  <span className="text-gray-400 text-sm">Coming Soon</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Success Notification */}
@@ -935,7 +1057,9 @@ export default function LinkedInPage() {
             </div>
           )}
         </div>
-      </main>
+      </main>      
+          {/* Credit Manager (handles notifications and referrals) */}
+          <CreditManager />
     </div>
   );
 }

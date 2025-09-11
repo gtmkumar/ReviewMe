@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     await db.connect();
 
     // Check if GitHub integration exists
-    const integration = await db.integrations.findOne({
+    const integrationsCollection = await db.getIntegrationsCollection();
+    const integration = await integrationsCollection.findOne({
       userId: (session.user as any).id,
       type: 'github'
     });
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     );
 
     // Update integration record
-    await db.integrations.updateOne(
+    await integrationsCollection.updateOne(
       { userId: (session.user as any).id, type: 'github' },
       {
         $set: {
@@ -83,16 +84,19 @@ export async function GET(req: NextRequest) {
     await db.connect();
 
     // Get GitHub profile data
-    const profile = await db.profiles.findOne({ 
+    const profilesCollection = await db.getProfilesCollection();
+    const profile = await profilesCollection.findOne({ 
       userId: (session.user as any).id 
     });
 
-    const integration = await db.integrations.findOne({
+    const integrationsCollection = await db.getIntegrationsCollection();
+    const integration = await integrationsCollection.findOne({
       userId: (session.user as any).id,
       type: 'github'
     });
 
-    const repositories = await db.repositories.find({
+    const repositoriesCollection = await db.getRepositoriesCollection();
+    const repositories = await repositoriesCollection.find({
       userId: (session.user as any).id
     }).sort({ stars: -1 }).limit(10).toArray();
 

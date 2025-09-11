@@ -8,10 +8,18 @@ import {
   FileText, Upload, RefreshCw, CheckCircle, AlertCircle, 
   Download, Eye, Trash2, Award, TrendingUp, Target,
   User, Briefcase, GraduationCap, Code, Star, 
-  AlertTriangle, Info, ExternalLink, CreditCard, History
+  AlertTriangle, Info, ExternalLink, CreditCard, History, Gift
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
+import { CreditManager } from '@/components/credit-manager';
+
+// Global type declaration for window function
+declare global {
+  interface Window {
+    showReferralModal?: () => void;
+  }
+}
 
 interface ResumeAnalysis {
   fileName: string;
@@ -43,6 +51,7 @@ export default function ResumePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
   const [error, setError] = useState('');
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [credits, setCredits] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -145,6 +154,7 @@ export default function ResumePage() {
       const requiredCredits = creditCheckData.costs.resume;
       if (creditCheckData.credits < requiredCredits) {
         setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
+        setShowInsufficientCreditsModal(true);
         setShowCreditWarning(true);
         return;
       }
@@ -538,8 +548,22 @@ export default function ResumePage() {
                 <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-red-400" />
-                    <div className="ml-3">
+                    <div className="ml-3 flex-1">
                       <p className="text-sm text-red-800">{error}</p>
+                      {showInsufficientCreditsModal && (
+                        <button 
+                          onClick={() => {
+                            if (typeof window !== 'undefined' && window.showReferralModal) {
+                              window.showReferralModal();
+                            }
+                            setShowInsufficientCreditsModal(false);
+                          }}
+                          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm inline-flex items-center space-x-2"
+                        >
+                          <Gift className="h-4 w-4" />
+                          <span>Earn 200 Credits - Refer Friends</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -765,7 +789,9 @@ export default function ResumePage() {
               </div>
             </div>
           )}
-        </div>
+        </div>        
+        {/* Credit Manager (handles notifications and referrals) */}
+        <CreditManager />
       </main>
       
       {/* Success Notification */}

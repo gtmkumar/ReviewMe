@@ -45,11 +45,14 @@ export async function GET(request: NextRequest) {
       filter.serviceType = serviceType;
     }
 
+    // Get credit transactions collection
+    const creditTransactionsCollection = await db.getCreditTransactionsCollection();
+    
     // Get total count for pagination
-    const total = await db.getDb().collection('credit_transactions').countDocuments(filter);
+    const total = await creditTransactionsCollection.countDocuments(filter);
 
     // Fetch transactions with pagination
-    const transactions = await db.getDb().collection('credit_transactions')
+    const transactions = await creditTransactionsCollection
       .find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -69,7 +72,7 @@ export async function GET(request: NextRequest) {
       }
     ];
 
-    const summary = await db.getDb().collection('credit_transactions')
+    const summary = await creditTransactionsCollection
       .aggregate(summaryPipeline)
       .toArray();
 
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const recentActivity = await db.getDb().collection('credit_transactions')
+    const recentActivity = await creditTransactionsCollection
       .find({
         userId,
         createdAt: { $gte: sevenDaysAgo }

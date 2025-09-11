@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     await db.connect();
 
     // Find user by email
-    const user = await db.users.findOne({ 
+    const usersCollection = await db.getUsersCollection();
+    const user = await usersCollection.findOne({ 
       email: session.user.email.toLowerCase() 
     });
 
@@ -130,7 +131,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update user settings
-    const result = await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    const result = await usersCollection.updateOne(
       { email: session.user.email.toLowerCase() },
       { $set: updateData }
     );

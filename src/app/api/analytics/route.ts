@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Initialize database connection
-    const db = getDbManager(process.env.MONGODB_URI!);
-    await db.connect();
+    // Get the database manager instance - connection is handled once at startup
+    const db = getDbManager();
+    const database = await db.getDb();
 
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');

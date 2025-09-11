@@ -710,7 +710,7 @@ export default function HomePage() {
             <div className="card p-8 text-center">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold mb-2">Free</h3>
-                <div className="text-4xl font-bold text-primary mb-2">$0</div>
+                <div className="text-4xl font-bold text-primary mb-2">₹0</div>
                 <div className="text-muted-foreground">Get started for free</div>
               </div>
               
@@ -742,50 +742,13 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Credit Packages */}
-            <div className="card p-8 text-center border-2 border-primary relative">
+            {/* Referral Program */}
+            <div className="card p-8 text-center border-2 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-400 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                <span className="bg-yellow-600 text-white px-4 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </span>
               </div>
-              
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold mb-2">Credit Package</h3>
-                <div className="text-4xl font-bold text-primary mb-2">$19</div>
-                <div className="text-muted-foreground">500 credits</div>
-              </div>
-              
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-left">500 analysis credits</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-left">Priority support</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-left">Advanced analytics</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-left">Export reports (PDF)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-left">No expiration</span>
-                </div>
-              </div>
-              
-              <Link href="/auth/signup" className="btn-primary w-full">
-                Buy Credits
-              </Link>
-            </div>
-
-            {/* Referral Program */}
-            <div className="card p-8 text-center bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
               <div className="mb-6">
                 <Gift className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-2 text-yellow-800">Refer & Earn</h3>
@@ -820,44 +783,53 @@ export default function HomePage() {
                 Start Referring
               </Link>
             </div>
-          </div>
 
-          {/* Credit Usage */}
-          <div className="mt-16 max-w-2xl mx-auto">
-            <div className="bg-gray-50 rounded-2xl p-8">
-              <h3 className="text-xl font-bold text-center mb-6">How Credits Work</h3>
-              <div className="grid md:grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="w-12 h-12 bg-github/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Github className="h-6 w-6 text-github" />
-                  </div>
-                  <div className="font-semibold mb-1">GitHub Analysis</div>
-                  <div className="text-2xl font-bold text-primary">20</div>
-                  <div className="text-sm text-muted-foreground">credits</div>
+             {/* Credit Packages */}
+            <div className="card p-8 text-center relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                  Experts Choice
+                </span>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold mb-2">Credit Package</h3>
+                <div className="text-4xl font-bold text-primary mb-2">₹299</div>
+                <div className="text-muted-foreground">500 credits</div>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-left">500 analysis credits</span>
                 </div>
-                <div>
-                  <div className="w-12 h-12 bg-linkedin/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Linkedin className="h-6 w-6 text-linkedin" />
-                  </div>
-                  <div className="font-semibold mb-1">LinkedIn Review</div>
-                  <div className="text-2xl font-bold text-primary">15</div>
-                  <div className="text-sm text-muted-foreground">credits</div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-left">Priority support</span>
                 </div>
-                <div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <FileText className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="font-semibold mb-1">Resume Scoring</div>
-                  <div className="text-2xl font-bold text-primary">20</div>
-                  <div className="text-sm text-muted-foreground">credits</div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-left">Advanced analytics</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-left">Export reports (PDF)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-left">No expiration</span>
                 </div>
               </div>
+              
+              <Link href="/auth/signup" className="btn-primary w-full">
+                Buy Credits
+              </Link>
             </div>
-          </div>
+          </div>          
 
           {/* Special CTA for Referrals */}
           <div className="mt-16 text-center">
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-8 text-white">
+            <div className="bg-gradient-to-br from-primary via-blue-600 to-purple-700 rounded-2xl p-8 text-white">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">
                 🎉 Want More Credits? Refer & Earn!
               </h3>

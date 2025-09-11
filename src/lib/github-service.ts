@@ -19,6 +19,7 @@ export interface GitHubProfile {
 }
 
 export interface GitHubRepository {
+  [x: string]: any;
   id: number;
   name: string;
   full_name: string;
@@ -510,7 +511,8 @@ export class GitHubService {
       const score = await this.analyzeUserProfile(username, accessToken);
 
       // Store in database
-      await this.db.profiles.updateOne(
+      const profilesCollection = await this.db.getProfilesCollection();
+      await profilesCollection.updateOne(
         { userId },
         {
           $set: {
@@ -566,11 +568,12 @@ export class GitHubService {
       }));
 
       // Clear existing repositories for this user
-      await this.db.repositories.deleteMany({ userId });
+      const repositoriesCollection = await this.db.getRepositoriesCollection();
+      await repositoriesCollection.deleteMany({ userId });
 
       // Insert new repository data
       if (repositoryDocs.length > 0) {
-        await this.db.repositories.insertMany(repositoryDocs);
+        await repositoriesCollection.insertMany(repositoryDocs);
       }
 
       console.log(`Successfully synced GitHub data for user ${userId}`);

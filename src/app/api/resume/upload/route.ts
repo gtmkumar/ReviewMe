@@ -69,7 +69,8 @@ export async function POST(req: NextRequest) {
       uploadedAt: new Date(),
     };
 
-    const result = await db.documents.insertOne(fileData);
+    const documentsCollection = await db.getDocumentsCollection();
+    const result = await documentsCollection.insertOne(fileData);
 
     // Process resume asynchronously
     const resumeService = new ResumeParsingService();

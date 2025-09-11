@@ -1,15 +1,17 @@
 import { NextAuthOptions } from 'next-auth';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import type { Adapter } from 'next-auth/adapters';
+import { getDbManager } from './database';
 
-// MongoDB connection
-const client = new MongoClient(process.env.MONGODB_URI!);
-const clientPromise = client.connect();
+// Get the MongoDB connection from our centralized manager
+const dbManager = getDbManager(process.env.MONGODB_URI!);
+// Connect to the database and get the client for NextAuth adapter
+const clientPromise = dbManager.connect().then(() => dbManager['client']);
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise) as Adapter,

@@ -69,8 +69,18 @@ export default function SignInPage() {
 
       <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
         {/* Left Side - Welcome Back Content (Hidden on mobile) */}
+        
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
+        
           <div className="max-w-md space-y-8">
+             {/* Back to home */}
+            <Link 
+              href="/" 
+              className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-4 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+              Back to home
+            </Link>
             {/* Logo and Brand */}
             <div className="text-center space-y-4">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-blue-600 rounded-2xl shadow-lg">
@@ -137,15 +147,7 @@ export default function SignInPage() {
 
         {/* Right Side - Signin Form */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
-          <div className="w-full max-w-md space-y-6">
-            {/* Back to home */}
-            <Link 
-              href="/" 
-              className="inline-flex items-center text-sm text-gray-600 hover:text-primary mb-4 transition-colors group"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-              Back to home
-            </Link>
+          <div className="w-full max-w-md space-y-6">           
 
             {/* Form Header */}
             <div className="text-center space-y-2">

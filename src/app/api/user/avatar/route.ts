@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
     await db.connect();
 
     // Update user's avatar
-    const result = await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    const result = await usersCollection.updateOne(
       { email: session.user.email.toLowerCase() },
       { 
         $set: { 
@@ -119,7 +120,8 @@ export async function DELETE(request: NextRequest) {
     await db.connect();
 
     // Remove user's avatar
-    const result = await db.users.updateOne(
+    const usersCollection = await db.getUsersCollection();
+    const result = await usersCollection.updateOne(
       { email: session.user.email.toLowerCase() },
       { 
         $unset: { avatar: "" },

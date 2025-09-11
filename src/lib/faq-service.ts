@@ -41,7 +41,8 @@ export class FAQService {
       }
       
       // Get all active FAQs
-      const faqs = await db.faqs.find(searchCriteria).toArray();
+      const faqsCollection = await db.getFaqsCollection();
+      const faqs = await faqsCollection.find(searchCriteria).toArray();
       
       // Score and rank FAQs based on relevance
       const scoredResults: FAQSearchResult[] = [];
@@ -110,14 +111,15 @@ export class FAQService {
     try {
       const db = getDbManager();
       
-      const faq = await db.faqs.findOne({ 
+      const faqsCollection = await db.getFaqsCollection();
+      const faq = await faqsCollection.findOne({ 
         _id: id,
         isActive: true 
       });
       
       if (faq) {
         // Increment view count
-        await db.faqs.updateOne(
+        await faqsCollection.updateOne(
           { _id: id },
           { $inc: { viewCount: 1 } }
         );
@@ -144,12 +146,13 @@ export class FAQService {
     try {
       const db = getDbManager();
       
-      const faq = await db.faqs.findOne({ _id: faqId });
+      const faqsCollection = await db.getFaqsCollection();
+      const faq = await faqsCollection.findOne({ _id: faqId });
       if (!faq || !faq.relatedFaqs?.length) {
         return [];
       }
       
-      const relatedFaqs = await db.faqs
+      const relatedFaqs = await faqsCollection
         .find({
           _id: { $in: faq.relatedFaqs },
           isActive: true
@@ -180,7 +183,8 @@ export class FAQService {
       
       // Update FAQ counters
       const updateField = wasHelpful ? 'helpfulCount' : 'notHelpfulCount';
-      await db.faqs.updateOne(
+      const faqsCollection = await db.getFaqsCollection();
+      await faqsCollection.updateOne(
         { _id: faqId },
         { $inc: { [updateField]: 1 } }
       );
@@ -222,7 +226,8 @@ export class FAQService {
     try {
       const db = getDbManager();
       
-      const categories = await db.faqs.distinct('category', { isActive: true });
+      const faqsCollection = await db.getFaqsCollection();
+      const categories = await faqsCollection.distinct('category', { isActive: true });
       return categories.sort();
     } catch (error) {
       console.error('Error fetching FAQ categories:', error);
@@ -237,7 +242,8 @@ export class FAQService {
     try {
       const db = getDbManager();
       
-      const faqs = await db.faqs
+      const faqsCollection = await db.getFaqsCollection();
+      const faqs = await faqsCollection
         .find({ 
           category, 
           isActive: true 
@@ -279,7 +285,8 @@ export class FAQService {
         timestamp: new Date()
       };
       
-      await db.faqInteractions.insertOne(interaction);
+      const faqInteractionsCollection = await db.getFaqInteractionsCollection();
+      await faqInteractionsCollection.insertOne(interaction);
     } catch (error) {
       console.error('Error tracking FAQ interaction:', error);
       // Don't throw error here as it's not critical

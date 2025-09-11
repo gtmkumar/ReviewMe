@@ -9,6 +9,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Global type declaration for window function
+declare global {
+  interface Window {
+    showReferralModal?: () => void;
+  }
+}
+
 interface CreditInfo {
   credits: number;
   isLowCredits: boolean;
@@ -303,6 +310,26 @@ export function CreditManager() {
   const [showNotification, setShowNotification] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Expose function to show referral modal globally
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.showReferralModal = () => {
+        if (referralStats) {
+          setShowReferralModal(true);
+        } else {
+          loadReferralStats().then(() => {
+            setShowReferralModal(true);
+          });
+        }
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.showReferralModal;
+      }
+    };
+  }, [referralStats]);
 
   useEffect(() => {
     if (!session?.user?.email) return;

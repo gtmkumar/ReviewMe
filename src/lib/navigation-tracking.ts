@@ -41,7 +41,8 @@ class NavigationTrackingService {
   async trackNavigation(event: NavigationTrackingEvent): Promise<void> {
     try {
       const db = getDbManager();
-      await db.navigationTracking.insertOne({
+      const navigationTrackingCollection = await db.getNavigationTrackingCollection();
+      await navigationTrackingCollection.insertOne({
         ...event,
         createdAt: new Date()
       });
@@ -57,7 +58,8 @@ class NavigationTrackingService {
   async trackSecurityEvent(event: SecurityAuditEvent): Promise<void> {
     try {
       const db = getDbManager();
-      await db.securityAudit.insertOne({
+      const securityAuditCollection = await db.getSecurityAuditCollection();
+      await securityAuditCollection.insertOne({
         ...event,
         createdAt: new Date()
       });
@@ -85,7 +87,8 @@ class NavigationTrackingService {
   async getUserNavigationHistory(userId: string, limit: number = 50): Promise<NavigationTrackingEvent[]> {
     try {
       const db = getDbManager();
-      const events = await db.navigationTracking
+      const navigationTrackingCollection = await db.getNavigationTrackingCollection();
+      const events = await navigationTrackingCollection
         .find({ userId })
         .sort({ timestamp: -1 })
         .limit(limit)
@@ -124,7 +127,8 @@ class NavigationTrackingService {
         if (filters.toDate) query.timestamp.$lte = filters.toDate;
       }
 
-      const events = await db.securityAudit
+      const securityAuditCollection = await db.getSecurityAuditCollection();
+      const events = await securityAuditCollection
         .find(query)
         .sort({ timestamp: -1 })
         .limit(limit)

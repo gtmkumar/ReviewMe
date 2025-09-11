@@ -69,7 +69,8 @@ export class NotificationService {
         expiresAt: options.expiresAt,
       };
 
-      const result = await this.db.notifications.insertOne(notification);
+      const notificationsCollection = await this.db.getNotificationsCollection();
+      const result = await notificationsCollection.insertOne(notification);
       
       // Send push notification if user has enabled it
       await this.sendPushNotification(options.userId, notification);
@@ -109,7 +110,8 @@ export class NotificationService {
         { expiresAt: { $gt: new Date() } }
       ];
 
-      let query = this.db.notifications
+      const notificationsCollection = await this.db.getNotificationsCollection();
+      let query = notificationsCollection
         .find(filter)
         .sort({ createdAt: -1 });
 
@@ -128,7 +130,8 @@ export class NotificationService {
     try {
       await this.db.connect();
 
-      await this.db.notifications.updateOne(
+      const notificationsCollection = await this.db.getNotificationsCollection();
+      await notificationsCollection.updateOne(
         { _id: notificationId, userId },
         { $set: { isRead: true } }
       );
@@ -142,7 +145,8 @@ export class NotificationService {
     try {
       await this.db.connect();
 
-      await this.db.notifications.updateMany(
+      const notificationsCollection = await this.db.getNotificationsCollection();
+      await notificationsCollection.updateMany(
         { userId, isRead: false },
         { $set: { isRead: true } }
       );
@@ -156,7 +160,8 @@ export class NotificationService {
     try {
       await this.db.connect();
 
-      const result = await this.db.notifications.deleteMany({
+      const notificationsCollection = await this.db.getNotificationsCollection();
+      const result = await notificationsCollection.deleteMany({
         expiresAt: { $lte: new Date() }
       });
 
@@ -170,7 +175,9 @@ export class NotificationService {
   private async sendPushNotification(userId: string, notification: NotificationDocument): Promise<void> {
     try {
       // Get user preferences
-      const preferences = await this.db.preferences.findOne({ userId });
+      await this.db.connect();
+      const preferencesCollection = await this.db.getPreferencesCollection();
+      const preferences = await preferencesCollection.findOne({ userId });
       
       if (!preferences?.notifications?.push) {
         return; // User has disabled push notifications
@@ -219,13 +226,15 @@ export class NotificationService {
   ): Promise<void> {
     try {
       // Get user email from database
-      const user = await this.db.users.findOne({ _id: userId });
+      const usersCollection = await this.db.getUsersCollection();
+      const user = await usersCollection.findOne({ _id: userId });
       if (!user?.email) {
         throw new Error('User email not found');
       }
 
       // Get user preferences
-      const preferences = await this.db.preferences.findOne({ userId });
+      const preferencesCollection = await this.db.getPreferencesCollection();
+      const preferences = await preferencesCollection.findOne({ userId });
       if (!preferences?.notifications?.email) {
         return; // User has disabled email notifications
       }
@@ -280,9 +289,13 @@ export class NotificationService {
     try {
       await this.db.connect();
 
-      const user = await this.db.users.findOne({ _id: userId });
-      const profile = await this.db.profiles.findOne({ userId });
-      const preferences = await this.db.preferences.findOne({ userId });
+      const usersCollection = await this.db.getUsersCollection();
+      const profilesCollection = await this.db.getProfilesCollection();
+      const preferencesCollection = await this.db.getPreferencesCollection();
+      
+      const user = await usersCollection.findOne({ _id: userId });
+      const profile = await profilesCollection.findOne({ userId });
+      const preferences = await preferencesCollection.findOne({ userId });
 
       if (!user || !preferences?.notifications?.weeklyDigest) {
         return null;
@@ -519,7 +532,8 @@ export class NotificationService {
   // Milestone Notifications
   async checkAndCreateMilestoneNotifications(userId: string): Promise<void> {
     try {
-      const profile = await this.db.profiles.findOne({ userId });
+      const profilesCollection = await this.db.getProfilesCollection();
+      const profile = await profilesCollection.findOne({ userId });
       if (!profile) return;
 
       const currentScore = profile.profileScore || 0;
@@ -534,7 +548,8 @@ export class NotificationService {
       for (const milestone of milestones) {
         if (currentScore >= milestone.score) {
           // Check if we've already sent this milestone notification
-          const existingNotification = await this.db.notifications.findOne({
+          const notificationsCollection = await this.db.getNotificationsCollection();
+          const existingNotification = await notificationsCollection.findOne({
             userId,
             category: 'milestone',
             title: milestone.title,
@@ -581,7 +596,8 @@ export class NotificationService {
   private async sendWeeklyDigestsToAllUsers(): Promise<void> {
     try {
       // Get all users who have weekly digest enabled
-      const users = await this.db.preferences
+      const preferencesCollection = await this.db.getPreferencesCollection();
+      const users = await preferencesCollection
         .find({ 'notifications.weeklyDigest': true })
         .toArray();
 

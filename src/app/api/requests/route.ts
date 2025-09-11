@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       // Get request details to determine service type
       const db = getDbManager(process.env.MONGODB_URI!);
       await db.connect();
-      const request = await db.userRequests.findOne({ _id: requestId });
+      const userRequestsCollection = await db.getUserRequestsCollection();
+      const request = await userRequestsCollection.findOne({ _id: requestId });
       
       if (request) {
         await RequestLogService.logResponse(

@@ -227,7 +227,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-gray-50">
       <DashboardNavigation />
       
-      <main className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-5xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           
           {/* Header */}

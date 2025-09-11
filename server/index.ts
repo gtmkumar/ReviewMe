@@ -3,24 +3,25 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
-import { MongoClient, Db } from 'mongodb';
+import { Db } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { getDbManager } from '../src/lib/database';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB connection
+// MongoDB connection using centralized database manager
 let db: Db;
 const connectToMongoDB = async () => {
   try {
-    const client = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017/reviewme');
-    await client.connect();
-    db = client.db();
-    console.log('Connected to MongoDB');
+    const dbManager = getDbManager(process.env.MONGODB_URI || 'mongodb://localhost:27017/reviewme');
+    await dbManager.connect();
+    db = await dbManager.getDb();
+    console.log('Server connected to MongoDB via centralized connection');
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);

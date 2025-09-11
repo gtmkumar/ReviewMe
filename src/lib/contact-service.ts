@@ -32,6 +32,7 @@ export class ContactService {
   ): Promise<string> {
     try {
       const db = getDbManager();
+      await db.connect();
       
       // Check for duplicate submissions (prevent spam)
       const recentSubmission = await this.checkForDuplicateSubmission(
@@ -74,7 +75,8 @@ export class ContactService {
         updatedAt: new Date()
       };
       
-      const result = await db.userQueries.insertOne(queryDoc);
+      const userQueriesCollection = await db.getUserQueriesCollection();
+      const result = await userQueriesCollection.insertOne(queryDoc);
       const queryId = result.insertedId.toString();
       
       // Send confirmation email (in a real app)
@@ -114,6 +116,7 @@ export class ContactService {
   }> {
     try {
       const db = getDbManager();
+      await db.connect();
       
       // Build filter criteria
       const criteria: any = {};
@@ -131,14 +134,15 @@ export class ContactService {
       
       const skip = (page - 1) * limit;
       
+      const userQueriesCollection = await db.getUserQueriesCollection();
       const [queries, total] = await Promise.all([
-        db.userQueries
+        userQueriesCollection
           .find(criteria)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
           .toArray(),
-        db.userQueries.countDocuments(criteria)
+        userQueriesCollection.countDocuments(criteria)
       ]);
       
       const totalPages = Math.ceil(total / limit);
@@ -161,8 +165,10 @@ export class ContactService {
   async getQueryById(id: string): Promise<UserQuery | null> {
     try {
       const db = getDbManager();
+      await db.connect();
       
-      const query = await db.userQueries.findOne({ _id: id });
+      const userQueriesCollection = await db.getUserQueriesCollection();
+      const query = await userQueriesCollection.findOne({ _id: id });
       
       if (!query) {
         return null;
@@ -186,6 +192,7 @@ export class ContactService {
   ): Promise<void> {
     try {
       const db = getDbManager();
+      await db.connect();
       
       const updateData: any = {
         status,
@@ -205,14 +212,15 @@ export class ContactService {
         updateData.resolvedAt = new Date();
       }
       
-      await db.userQueries.updateOne(
+      const userQueriesCollection = await db.getUserQueriesCollection();
+      await userQueriesCollection.updateOne(
         { _id: id },
         { $set: updateData }
       );
       
       // Send notification email to user (in real app)
       if (response) {
-        const query = await db.userQueries.findOne({ _id: id });
+        const query = await userQueriesCollection.findOne({ _id: id });
         if (query) {
           await this.sendResponseEmail(query.email, query.name, response);
         }
@@ -236,7 +244,9 @@ export class ContactService {
   }> {
     try {
       const db = getDbManager();
+      await db.connect();
       
+      const userQueriesCollection = await db.getUserQueriesCollection();
       const [
         total,
         statusStats,
@@ -244,17 +254,17 @@ export class ContactService {
         categoryStats,
         responseTimeStats
       ] = await Promise.all([
-        db.userQueries.countDocuments(),
-        db.userQueries.aggregate([
+        userQueriesCollection.countDocuments(),
+        userQueriesCollection.aggregate([
           { $group: { _id: '$status', count: { $sum: 1 } } }
         ]).toArray(),
-        db.userQueries.aggregate([
+        userQueriesCollection.aggregate([
           { $group: { _id: '$priority', count: { $sum: 1 } } }
         ]).toArray(),
-        db.userQueries.aggregate([
+        userQueriesCollection.aggregate([
           { $group: { _id: '$category', count: { $sum: 1 } } }
         ]).toArray(),
-        db.userQueries.aggregate([
+        userQueriesCollection.aggregate([
           {
             $match: { 
               respondedAt: { $exists: true },
@@ -331,9 +341,11 @@ export class ContactService {
   ): Promise<boolean> {
     try {
       const db = getDbManager();
+      await db.connect();
       const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
       
-      const existingQuery = await db.userQueries.findOne({
+      const userQueriesCollection = await db.getUserQueriesCollection();
+      const existingQuery = await userQueriesCollection.findOne({
         email,
         subject,
         createdAt: { $gte: cutoffTime }

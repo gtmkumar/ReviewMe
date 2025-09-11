@@ -23,6 +23,13 @@ import { CreditManager } from '@/components/credit-manager';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
+// Global type declaration for window function
+declare global {
+  interface Window {
+    showReferralModal?: () => void;
+  }
+}
+
 interface DashboardData {
   success: boolean;
   data: {
@@ -290,11 +297,19 @@ export default function DashboardPage() {
               
               {/* Credit Display and Transactions */}
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <button 
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.showReferralModal) {
+                      window.showReferralModal();
+                    }
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                >
                   <CreditCard className="h-4 w-4 text-blue-600" />
                   <span className="text-blue-700 font-medium">Credits: </span>
                   <span className="text-blue-900 font-bold">{credits}</span>
-                </div>
+                  {/* <span className="text-xs text-blue-600 ml-1">(Click to earn more)</span>   */}
+                </button>
                 <button 
                   onClick={handleTransactionsToggle}
                   className={cn(
