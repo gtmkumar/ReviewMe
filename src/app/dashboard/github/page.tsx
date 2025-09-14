@@ -8,11 +8,40 @@ import {
   Github, Star, GitBranch, Users, Calendar, Book, 
   Search, RefreshCw, CheckCircle, AlertCircle, ExternalLink,
   Code, Trophy, TrendingUp, MapPin, Link as LinkIcon, 
-  CreditCard, Zap, AlertTriangle, History
+  CreditCard, Zap, AlertTriangle, History, BarChart3, PieChart,
+  Database, Clock
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
 import { CreditManager } from '@/components/credit-manager';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
+  TimeScale
+} from 'chart.js';
+import { Bar, Pie, Line } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
+  TimeScale
+);
 
 // Global type declaration for window function
 declare global {
@@ -21,56 +50,75 @@ declare global {
   }
 }
 
-interface GitHubProfile {
+interface GitHubUser {
   login: string;
-  name: string;
-  bio: string;
+  id: number;
   avatar_url: string;
-  location: string;
-  blog: string;
-  company: string;
-  followers: number;
-  following: number;
+  html_url: string;
+  name: string | null;
+  company: string | null;
+  blog: string | null;
+  location: string | null;
+  email: string | null;
+  bio: string | null;
   public_repos: number;
   public_gists: number;
+  followers: number;
+  following: number;
   created_at: string;
   updated_at: string;
-  html_url: string;
 }
 
 interface GitHubRepository {
   id: number;
   name: string;
   full_name: string;
-  description: string;
-  html_url: string;
-  language: string;
+  description: string | null;
+  language: string | null;
   stargazers_count: number;
   forks_count: number;
   watchers_count: number;
   size: number;
+  open_issues_count: number;
   created_at: string;
   updated_at: string;
   pushed_at: string;
-  clone_url: string;
   topics: string[];
+  default_branch: string;
+  clone_url: string;
+  html_url: string;
 }
 
-interface GitHubContributions {
-  total: number;
-  weeks: Array<{
-    week: number;
-    days: number[];
+interface GitHubAnalytics {
+  user: GitHubUser;
+  repositories: GitHubRepository[];
+  languageStats: {
+    reposByLanguage: Record<string, number>;
+    starsByLanguage: Record<string, number>;
+    commitsByLanguage: Record<string, number>;
+  };
+  commitHistory: Array<{
+    date: string;
+    count: number;
   }>;
+  topRepositories: {
+    byStars: GitHubRepository[];
+    byCommits: GitHubRepository[];
+  };
+  totalStats: {
+    totalStars: number;
+    totalForks: number;
+    totalSize: number;
+    languageCount: number;
+    averageStars: number;
+  };
 }
 
 export default function GitHubPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [username, setUsername] = useState('');
-  const [profile, setProfile] = useState<GitHubProfile | null>(null);
-  const [repositories, setRepositories] = useState<GitHubRepository[]>([]);
-  const [contributions, setContributions] = useState<GitHubContributions | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<GitHubAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedUsername, setSavedUsername] = useState('');
@@ -80,14 +128,60 @@ export default function GitHubPage() {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const [showTransactionSummary, setShowTransactionSummary] = useState(false);
+  const [savedDataInfo, setSavedDataInfo] = useState<{
+    lastUpdated: string;
+    username: string;
+    source: 'saved' | 'fresh';
+  } | null>(null);
+  const [loadingSavedData, setLoadingSavedData] = useState(true);
 
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) router.push('/auth/signin');
     
-    // Load user credits
+    // Load user credits and saved data
     loadUserCredits();
+    loadSavedAnalyticsData();
   }, [session, status, router]);
+
+  useEffect(() => {
+    // Load updated data when username changes
+    if (username && username !== savedUsername) {
+      loadSavedAnalyticsData(username);
+    }
+  }, [username, savedUsername]);
+
+  const loadSavedAnalyticsData = async (usernameParam?: string) => {
+    setLoadingSavedData(true);
+    try {
+      const url = usernameParam 
+        ? `/api/github/profile?username=${encodeURIComponent(usernameParam)}`
+        : '/api/github/profile';
+        
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (response.ok && data.success && data.data) {
+        setAnalyticsData(data.data);
+        setSavedUsername(data.username);
+        setSavedDataInfo({
+          lastUpdated: data.lastUpdated,
+          username: data.username,
+          source: 'saved'
+        });
+        if (!usernameParam) {
+          setUsername(data.username);
+        }
+      } else {
+        // No saved data found
+        setSavedDataInfo(null);
+      }
+    } catch (error) {
+      console.error('Error loading saved analytics data:', error);
+    } finally {
+      setLoadingSavedData(false);
+    }
+  };
 
   const loadUserCredits = async () => {
     try {
@@ -100,127 +194,59 @@ export default function GitHubPage() {
     }
   };
 
-  const fetchGitHubData = async (githubUsername: string) => {
+  const fetchGitHubAnalytics = async (githubUsername: string) => {
     setIsLoading(true);
     setError('');
     
     try {
-      // Check credits first (without deducting)
-      const creditCheckResponse = await fetch('/api/credits');
-      const creditCheckData = await creditCheckResponse.json();
-      
-      if (!creditCheckResponse.ok) {
-        throw new Error(creditCheckData.error || 'Failed to check credits');
-      }
-
-      const requiredCredits = creditCheckData.costs.github;
-      if (creditCheckData.credits < requiredCredits) {
-        setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
-        setShowCreditWarning(true);
-        return;
-      }
-
-      const startTime = Date.now();
-      
-      // Fetch profile data
-      const profileResponse = await fetch(`https://api.github.com/users/${githubUsername}`);
-      if (!profileResponse.ok) {
-        throw new Error('User not found');
-      }
-      const profileData = await profileResponse.json();
-      setProfile(profileData);
-
-      // Fetch repositories
-      let reposData = [];
-      const reposResponse = await fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=10`);
-      if (reposResponse.ok) {
-        reposData = await reposResponse.json();
-        setRepositories(reposData);
-      }
-
-      // Note: GitHub's contributions endpoint requires authentication, so we'll show a placeholder
-      // In a real implementation, you'd need to use GitHub's GraphQL API with proper authentication
-      setContributions({
-        total: Math.floor(Math.random() * 1000) + 500,
-        weeks: [] // We'll show a simplified view
-      });
-
-      setSavedUsername(githubUsername);
-      
-      const processingTime = Date.now() - startTime;
-      
-      // Now deduct credits and log the successful response
-      const deductionResponse = await fetch('/api/credits', {
+      const response = await fetch('/api/github/analytics', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'check_and_deduct',
-          serviceType: 'github',
-          payload: { username: githubUsername }
-        })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: githubUsername })
       });
 
-      const deductionData = await deductionResponse.json();
+      const data = await response.json();
       
-      if (!deductionResponse.ok) {
-        // Service succeeded but credit deduction failed - log this unusual case
-        console.error('Service succeeded but credit deduction failed:', deductionData.error);
-        // Still show success to user since the service worked
-      } else {
-        const currentRequestId = deductionData.requestId;
-        setRequestId(currentRequestId);
-        setCredits(deductionData.remainingCredits);
-        setShowCreditWarning(deductionData.isLowCredits);
-        
-        // Store transaction details for summary display
-        setTransactionDetails(deductionData.transaction);
-        setShowTransactionSummary(true);
-        
-        // Enhanced logging for successful credit deduction
-        console.log('Credit Deduction Successful:', {
-          requestId: currentRequestId,
-          serviceType: 'github',
-          creditsDeducted: deductionData.creditsDeducted,
-          remainingCredits: deductionData.remainingCredits,
-          username: githubUsername,
-          timestamp: new Date().toISOString()
-        });
-
-        // Log successful response
-        await fetch('/api/requests', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requestId: currentRequestId,
-            status: 'completed',
-            responseData: {
-              profile: profileData,
-              repositories: reposData || [],
-              username: githubUsername
-            },
-            analysisResults: {
-              score: calculateProfileScore(),
-              strengths: getProfileStrengths(profileData),
-              weaknesses: getProfileWeaknesses(profileData),
-              suggestions: getProfileSuggestions(profileData)
-            },
-            processingTime
-          })
-        });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch GitHub analytics');
       }
 
+      if (!data.success) {
+        throw new Error(data.error || 'GitHub analytics request failed');
+      }
+
+      // Set the analytics data
+      setAnalyticsData(data.data);
+      setSavedUsername(githubUsername);
+      setSavedDataInfo({
+        lastUpdated: new Date().toISOString(),
+        username: githubUsername,
+        source: 'fresh'
+      });
+      
+      // Update credits and transaction info
+      setCredits(data.remainingCredits);
+      setRequestId(data.requestId);
+      
+      setTransactionDetails({
+        id: data.requestId,
+        amount: data.creditsUsed,
+        serviceType: 'github',
+        timestamp: new Date().toISOString(),
+        description: 'GitHub Analytics'
+      });
+      setShowTransactionSummary(true);
       setShowSuccessNotification(true);
       setTimeout(() => setShowSuccessNotification(false), 5000);
 
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to fetch GitHub data';
+      const errorMessage = err.message || 'Failed to fetch GitHub analytics';
       setError(errorMessage);
-      setProfile(null);
-      setRepositories([]);
-      setContributions(null);
-      
-      // No need to log failed response since credits weren't deducted
-      console.error('GitHub service error:', errorMessage);
+      setAnalyticsData(null);
+      setSavedDataInfo(null);
+      console.error('GitHub analytics error:', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -229,96 +255,169 @@ export default function GitHubPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {
-      fetchGitHubData(username.trim());
+      fetchGitHubAnalytics(username.trim());
     }
   };
 
   const calculateProfileScore = () => {
-    if (!profile || !repositories) return 0;
+    if (!analyticsData) return 0;
     
+    const { user, repositories, totalStats } = analyticsData;
     let score = 0;
     
     // Basic profile completeness (20 points)
-    if (profile.name) score += 5;
-    if (profile.bio) score += 5;
-    if (profile.location) score += 3;
-    if (profile.blog) score += 3;
-    if (profile.company) score += 4;
+    if (user.name) score += 5;
+    if (user.bio) score += 5;
+    if (user.location) score += 3;
+    if (user.blog) score += 3;
+    if (user.company) score += 4;
     
     // Repository activity (30 points)
-    const repoCount = profile.public_repos;
+    const repoCount = user.public_repos;
     if (repoCount > 0) score += Math.min(repoCount * 2, 15);
     
-    const totalStars = repositories.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-    if (totalStars > 0) score += Math.min(totalStars, 15);
+    if (totalStats.totalStars > 0) score += Math.min(totalStats.totalStars, 15);
     
     // Social presence (20 points)
-    const followers = profile.followers;
+    const followers = user.followers;
     if (followers > 0) score += Math.min(Math.floor(followers / 5), 10);
     
-    const following = profile.following;
+    const following = user.following;
     if (following > 0) score += Math.min(Math.floor(following / 10), 10);
     
     // Account age and activity (30 points)
-    const accountAge = new Date().getFullYear() - new Date(profile.created_at).getFullYear();
+    const accountAge = new Date().getFullYear() - new Date(user.created_at).getFullYear();
     score += Math.min(accountAge * 3, 15);
     
-    // Recent activity
-    const recentRepos = repositories.filter(repo => {
-      const lastUpdate = new Date(repo.updated_at);
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      return lastUpdate > sixMonthsAgo;
-    });
-    score += Math.min(recentRepos.length * 3, 15);
+    // Recent activity (based on repository count)
+    score += Math.min(repositories.length * 2, 15);
     
     return Math.min(score, 100);
   };
 
-  const getProfileStrengths = (profileData: any): string[] => {
+  const getProfileStrengths = (): string[] => {
+    if (!analyticsData) return [];
+    const { user, totalStats } = analyticsData;
     const strengths = [];
-    if (profileData.bio) strengths.push('Complete bio');
-    if (profileData.blog) strengths.push('Website/portfolio linked');
-    if (profileData.company) strengths.push('Company information provided');
-    if (profileData.location) strengths.push('Location specified');
-    if (profileData.followers > 50) strengths.push('Strong follower base');
-    if (profileData.public_repos > 10) strengths.push('Multiple public repositories');
+    if (user.bio) strengths.push('Complete bio');
+    if (user.blog) strengths.push('Website/portfolio linked');
+    if (user.company) strengths.push('Company information provided');
+    if (user.location) strengths.push('Location specified');
+    if (user.followers > 50) strengths.push('Strong follower base');
+    if (user.public_repos > 10) strengths.push('Multiple public repositories');
+    if (totalStats.totalStars > 100) strengths.push('High star count across repositories');
+    if (totalStats.languageCount > 3) strengths.push('Diverse programming languages');
     return strengths;
   };
 
-  const getProfileWeaknesses = (profileData: any): string[] => {
+  const getProfileWeaknesses = (): string[] => {
+    if (!analyticsData) return [];
+    const { user, totalStats } = analyticsData;
     const weaknesses = [];
-    if (!profileData.bio) weaknesses.push('Missing bio');
-    if (!profileData.blog) weaknesses.push('No website/portfolio linked');
-    if (!profileData.company) weaknesses.push('Company information missing');
-    if (!profileData.location) weaknesses.push('Location not specified');
-    if (profileData.followers < 10) weaknesses.push('Low follower count');
-    if (profileData.public_repos < 5) weaknesses.push('Few public repositories');
+    if (!user.bio) weaknesses.push('Missing bio');
+    if (!user.blog) weaknesses.push('No website/portfolio linked');
+    if (!user.company) weaknesses.push('Company information missing');
+    if (!user.location) weaknesses.push('Location not specified');
+    if (user.followers < 10) weaknesses.push('Low follower count');
+    if (user.public_repos < 5) weaknesses.push('Few public repositories');
+    if (totalStats.totalStars < 10) weaknesses.push('Low star count');
     return weaknesses;
   };
 
-  const getProfileSuggestions = (profileData: any): string[] => {
+  const getProfileSuggestions = (): string[] => {
+    if (!analyticsData) return [];
+    const { user } = analyticsData;
     const suggestions = [];
-    if (!profileData.bio) suggestions.push('Add a compelling bio describing your skills and interests');
-    if (!profileData.blog) suggestions.push('Link your portfolio or personal website');
-    if (profileData.public_repos < 5) suggestions.push('Create more public repositories to showcase your work');
-    if (profileData.followers < 20) suggestions.push('Engage with the GitHub community to increase followers');
+    if (!user.bio) suggestions.push('Add a compelling bio describing your skills and interests');
+    if (!user.blog) suggestions.push('Link your portfolio or personal website');
+    if (user.public_repos < 5) suggestions.push('Create more public repositories to showcase your work');
+    if (user.followers < 20) suggestions.push('Engage with the GitHub community to increase followers');
     suggestions.push('Keep your repositories updated with recent commits');
     suggestions.push('Add README files to your repositories for better documentation');
+    suggestions.push('Use topics/tags to make your repositories more discoverable');
     return suggestions;
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // Chart.js configuration
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+  };
 
-  if (!session) return null;
+  const getLanguageChartsData = () => {
+    if (!analyticsData?.languageStats) return null;
+    
+    const { reposByLanguage, starsByLanguage } = analyticsData.languageStats;
+    const languages = Object.keys(reposByLanguage).slice(0, 10); // Top 10 languages
+    
+    return {
+      reposByLanguage: {
+        labels: languages,
+        datasets: [{
+          label: 'Repositories',
+          data: languages.map(lang => reposByLanguage[lang]),
+          backgroundColor: 'rgba(59, 130, 246, 0.5)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 1,
+        }],
+      },
+      starsByLanguage: {
+        labels: languages,
+        datasets: [{
+          label: 'Stars',
+          data: languages.map(lang => starsByLanguage[lang] || 0),
+          backgroundColor: 'rgba(245, 158, 11, 0.5)',
+          borderColor: 'rgba(245, 158, 11, 1)',
+          borderWidth: 1,
+        }],
+      },
+      languageDistribution: {
+        labels: languages,
+        datasets: [{
+          data: languages.map(lang => reposByLanguage[lang]),
+          backgroundColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF',
+            '#FF9F40',
+            '#FF6384',
+            '#C9CBCF',
+            '#4BC0C0',
+            '#FF6384'
+          ],
+        }],
+      },
+    };
+  };
+
+  const getCommitHistoryData = () => {
+    if (!analyticsData?.commitHistory) return null;
+    
+    return {
+      labels: analyticsData.commitHistory.map(item => 
+        new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      ),
+      datasets: [{
+        label: 'Repository Updates',
+        data: analyticsData.commitHistory.map(item => item.count),
+        fill: false,
+        borderColor: 'rgba(34, 197, 94, 1)',
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        tension: 0.1,
+      }],
+    };
+  };
 
   const profileScore = calculateProfileScore();
+  const languageCharts = getLanguageChartsData();
+  const commitHistory = getCommitHistoryData();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -332,7 +431,7 @@ export default function GitHubPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <Github className="h-8 w-8 text-github" />
-                <h1 className="text-3xl font-bold text-gray-900">GitHub Profile Analysis</h1>
+                <h1 className="text-3xl font-bold text-gray-900">GitHub Analytics Dashboard</h1>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -362,49 +461,52 @@ export default function GitHubPage() {
               </div>
             </div>
             <p className="text-gray-600">
-              Enter a GitHub username to analyze public profile data and repositories.
+              Enter a GitHub username to analyze profile data and repositories with detailed analytics charts.
             </p>
           </div>
 
-          {/* Success Notification */}
-          {showSuccessNotification && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          {/* Data Source Indicator */}
+          {savedDataInfo && (
+            <div className={cn(
+              "mb-6 p-4 rounded-lg border",
+              savedDataInfo.source === 'saved' 
+                ? "bg-blue-50 border-blue-200"
+                : "bg-green-50 border-green-200"
+            )}>
               <div className="flex items-center space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                {savedDataInfo.source === 'saved' ? (
+                  <Database className="h-5 w-5 text-blue-600" />
+                ) : (
+                  <Zap className="h-5 w-5 text-green-600" />
+                )}
                 <div>
-                  <h3 className="text-green-800 font-medium">Analysis Complete!</h3>
-                  <p className="text-green-700 text-sm">
-                    GitHub profile analyzed successfully. Remaining credits: {credits}
+                  <h3 className={cn(
+                    "font-medium",
+                    savedDataInfo.source === 'saved' ? "text-blue-800" : "text-green-800"
+                  )}>
+                    {savedDataInfo.source === 'saved' 
+                      ? 'Displaying Saved Analytics Data' 
+                      : 'Fresh Analytics Data Generated'
+                    }
+                  </h3>
+                  <p className={cn(
+                    "text-sm",
+                    savedDataInfo.source === 'saved' ? "text-blue-700" : "text-green-700"
+                  )}>
+                    Username: {savedDataInfo.username} | Last updated: {new Date(savedDataInfo.lastUpdated).toLocaleString()}
+                    {savedDataInfo.source === 'saved' && ' | No credits charged for cached data'}
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Low Credits Warning */}
-          {showCreditWarning && !showSuccessNotification && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <div>
-                    <h3 className="text-red-800 font-medium">You&apos;re low on credits!</h3>
-                    <p className="text-red-700 text-sm">
-                      You have {credits} credits remaining. Consider referring friends to earn more.
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    if (typeof window !== 'undefined' && window.showReferralModal) {
-                      window.showReferralModal();
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <Zap className="h-4 w-4 inline mr-2" />
-                  Earn 200 Credits
-                </button>
+          {/* Loading Saved Data */}
+          {loadingSavedData && (
+            <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <RefreshCw className="h-5 w-5 text-gray-600 animate-spin" />
+                <p className="text-gray-600">Loading saved analytics data...</p>
               </div>
             </div>
           )}
@@ -482,7 +584,7 @@ export default function GitHubPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Transaction ID:</span>
-                        <span className="font-mono text-xs">{transactionDetails.id}</span>
+                        <span className="font-mono text-xs">{transactionDetails.id ? transactionDetails.id.slice(-8) : 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Time:</span>
@@ -503,8 +605,8 @@ export default function GitHubPage() {
             )}
           </div>
 
-          {/* Profile Data */}
-          {profile && (
+          {/* GitHub Analytics Data */}
+          {analyticsData && (
             <div className="space-y-8">
               
               {/* Profile Overview */}
@@ -514,17 +616,17 @@ export default function GitHubPage() {
                 <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
                   <div className="flex items-start space-x-6">
                     <img
-                      src={profile.avatar_url}
-                      alt={profile.name || profile.login}
+                      src={analyticsData.user.avatar_url}
+                      alt={analyticsData.user.name || analyticsData.user.login}
                       className="w-24 h-24 rounded-full"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h2 className="text-2xl font-bold text-gray-900">
-                          {profile.name || profile.login}
+                          {analyticsData.user.name || analyticsData.user.login}
                         </h2>
                         <a
-                          href={profile.html_url}
+                          href={analyticsData.user.html_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-github hover:text-github/80 transition-colors"
@@ -532,40 +634,40 @@ export default function GitHubPage() {
                           <ExternalLink className="h-5 w-5" />
                         </a>
                       </div>
-                      <p className="text-gray-600 text-lg mb-3">@{profile.login}</p>
-                      {profile.bio && (
-                        <p className="text-gray-700 mb-4">{profile.bio}</p>
+                      <p className="text-gray-600 text-lg mb-3">@{analyticsData.user.login}</p>
+                      {analyticsData.user.bio && (
+                        <p className="text-gray-700 mb-4">{analyticsData.user.bio}</p>
                       )}
                       
                       <div className="grid grid-cols-2 gap-4">
-                        {profile.company && (
+                        {analyticsData.user.company && (
                           <div className="flex items-center text-sm text-gray-600">
                             <Users className="h-4 w-4 mr-2" />
-                            {profile.company}
+                            {analyticsData.user.company}
                           </div>
                         )}
-                        {profile.location && (
+                        {analyticsData.user.location && (
                           <div className="flex items-center text-sm text-gray-600">
                             <MapPin className="h-4 w-4 mr-2" />
-                            {profile.location}
+                            {analyticsData.user.location}
                           </div>
                         )}
-                        {profile.blog && (
+                        {analyticsData.user.blog && (
                           <div className="flex items-center text-sm text-gray-600">
                             <LinkIcon className="h-4 w-4 mr-2" />
                             <a 
-                              href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
+                              href={analyticsData.user.blog.startsWith('http') ? analyticsData.user.blog : `https://${analyticsData.user.blog}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="hover:text-primary transition-colors truncate"
                             >
-                              {profile.blog}
+                              {analyticsData.user.blog}
                             </a>
                           </div>
                         )}
                         <div className="flex items-center text-sm text-gray-600">
                           <Calendar className="h-4 w-4 mr-2" />
-                          Joined {new Date(profile.created_at).toLocaleDateString()}
+                          Joined {new Date(analyticsData.user.created_at).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -593,56 +695,136 @@ export default function GitHubPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Completeness</span>
                       <span className="text-sm font-medium">
-                        {[profile.name, profile.bio, profile.location, profile.blog, profile.company].filter(Boolean).length}/5
+                        {[analyticsData.user.name, analyticsData.user.bio, analyticsData.user.location, analyticsData.user.blog, analyticsData.user.company].filter(Boolean).length}/5
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Repositories</span>
-                      <span className="text-sm font-medium">{profile.public_repos}</span>
+                      <span className="text-sm font-medium">{analyticsData.user.public_repos}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Followers</span>
-                      <span className="text-sm font-medium">{profile.followers}</span>
+                      <span className="text-sm text-gray-600">Total Stars</span>
+                      <span className="text-sm font-medium">{analyticsData.totalStats.totalStars}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Languages</span>
+                      <span className="text-sm font-medium">{analyticsData.totalStats.languageCount}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 <div className="bg-white rounded-lg shadow p-6 text-center">
                   <Book className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{profile.public_repos}</div>
+                  <div className="text-2xl font-bold text-gray-900">{analyticsData.user.public_repos}</div>
                   <div className="text-sm text-gray-600">Repositories</div>
                 </div>
                 
                 <div className="bg-white rounded-lg shadow p-6 text-center">
+                  <Star className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.totalStars}</div>
+                  <div className="text-sm text-gray-600">Total Stars</div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6 text-center">
+                  <GitBranch className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.totalForks}</div>
+                  <div className="text-sm text-gray-600">Total Forks</div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6 text-center">
                   <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{profile.followers}</div>
+                  <div className="text-2xl font-bold text-gray-900">{analyticsData.user.followers}</div>
                   <div className="text-sm text-gray-600">Followers</div>
                 </div>
                 
                 <div className="bg-white rounded-lg shadow p-6 text-center">
-                  <TrendingUp className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{profile.following}</div>
-                  <div className="text-sm text-gray-600">Following</div>
-                </div>
-                
-                <div className="bg-white rounded-lg shadow p-6 text-center">
                   <Code className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{profile.public_gists}</div>
-                  <div className="text-sm text-gray-600">Gists</div>
+                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.languageCount}</div>
+                  <div className="text-sm text-gray-600">Languages</div>
                 </div>
               </div>
 
+              {/* Analytics Charts */}
+              {languageCharts && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  
+                  {/* Repositories by Language */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <BarChart3 className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-medium text-gray-900">Repositories by Language</h3>
+                    </div>
+                    <div className="h-64">
+                      <Bar data={languageCharts.reposByLanguage} options={chartOptions} />
+                    </div>
+                  </div>
+
+                  {/* Stars by Language */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <BarChart3 className="h-5 w-5 text-yellow-600" />
+                      <h3 className="text-lg font-medium text-gray-900">Stars by Language</h3>
+                    </div>
+                    <div className="h-64">
+                      <Bar data={languageCharts.starsByLanguage} options={chartOptions} />
+                    </div>
+                  </div>
+
+                  {/* Language Distribution */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <PieChart className="h-5 w-5 text-purple-600" />
+                      <h3 className="text-lg font-medium text-gray-900">Language Distribution</h3>
+                    </div>
+                    <div className="h-64">
+                      <Pie data={languageCharts.languageDistribution} options={{
+                        ...chartOptions,
+                        plugins: {
+                          ...chartOptions.plugins,
+                          legend: {
+                            position: 'bottom' as const,
+                          },
+                        },
+                      }} />
+                    </div>
+                  </div>
+
+                  {/* Repository Activity Timeline */}
+                  {commitHistory && (
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <TrendingUp className="h-5 w-5 text-green-600" />
+                        <h3 className="text-lg font-medium text-gray-900">Repository Activity (Last 90 Days)</h3>
+                      </div>
+                      <div className="h-64">
+                        <Line data={commitHistory} options={{
+                          ...chartOptions,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                stepSize: 1
+                              }
+                            }
+                          }
+                        }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Top Repositories */}
-              {repositories.length > 0 && (
+              {analyticsData.repositories.length > 0 && (
                 <div className="bg-white rounded-lg shadow">
                   <div className="px-6 py-4 border-b border-gray-200">
                     <h3 className="text-lg font-medium text-gray-900">Top Repositories</h3>
                   </div>
                   <div className="divide-y divide-gray-200">
-                    {repositories.slice(0, 6).map((repo) => (
+                    {analyticsData.topRepositories.byStars.slice(0, 6).map((repo) => (
                       <div key={repo.id} className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -676,6 +858,15 @@ export default function GitHubPage() {
                                 <span>{repo.forks_count}</span>
                               </div>
                               <span>Updated {new Date(repo.updated_at).toLocaleDateString()}</span>
+                              {repo.topics && repo.topics.length > 0 && (
+                                <div className="flex flex-wrap gap-1 ml-4">
+                                  {repo.topics.slice(0, 3).map((topic, index) => (
+                                    <span key={index} className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                                      {topic}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -685,19 +876,70 @@ export default function GitHubPage() {
                 </div>
               )}
 
-              {/* Contribution Heatmap Placeholder */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Contribution Activity</h3>
-                <div className="bg-gray-50 rounded-lg p-8 text-center">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">
-                    Contribution heatmap would be displayed here with proper GitHub API authentication.
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    This requires GitHub GraphQL API access with user authentication.
-                  </p>
+              {/* Profile Analysis Results */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Strengths */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                    Strengths
+                  </h3>
+                  <ul className="space-y-2">
+                    {getProfileStrengths().map((strength, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mr-3 flex-shrink-0" />
+                        {strength}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Areas for Improvement */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                    Areas for Improvement
+                  </h3>
+                  <ul className="space-y-2">
+                    {getProfileWeaknesses().map((weakness, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-yellow-600 rounded-full mr-3 flex-shrink-0" />
+                        {weakness}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
+
+              {/* Suggestions */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
+                  Suggestions for Growth
+                </h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {getProfileSuggestions().map((suggestion, index) => (
+                    <li key={index} className="flex items-start text-sm text-gray-700">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mr-3 mt-2 flex-shrink-0" />
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {status === 'loading' && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            </div>
+          )}
+
+          {/* No Session Fallback */}
+          {!session && status !== 'loading' && (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Please sign in to access GitHub analytics.</p>
             </div>
           )}
         </div>

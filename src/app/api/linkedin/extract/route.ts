@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { RequestLogService, CreditService, ServiceType } from '@/lib/services';
+import { getDbManager } from '@/lib/database';
 
 interface LinkedInProfile {
   name: string;
@@ -134,25 +135,22 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-
-    // Check and deduct credits using the proper service
-    const creditCheck = await CreditService.checkAndDeductCredits(
-      userId,
-      'linkedin' as ServiceType,
-      { username: username.trim(), extractedData: true }
-    );
-
-    if (!creditCheck.success) {
+    
+    // Check if user has enough credits BEFORE making API call
+    const userCredits = await CreditService.getUserCredits(userId);
+    const requiredCredits = 15; // LinkedIn service cost
+    
+    if (userCredits < requiredCredits) {
       return NextResponse.json({
         success: false,
-        error: creditCheck.error
+        error: `Insufficient credits. You need ${requiredCredits} credits but only have ${userCredits}.`
       }, { status: 400 });
     }
 
     const startTime = Date.now();
 
     try {
-      // Call the LinkedIn extraction API
+      // Call the LinkedIn extraction API FIRST (before deducting credits)
       const response = await fetch(`https://us-central1-ez4cast.cloudfunctions.net/linkedinAutoComplete-autoComplete?=&search=${encodeURIComponent(username.trim())}`, {
         method: 'GET',
         headers: {
@@ -177,29 +175,53 @@ export async function POST(request: NextRequest) {
 
       const data = await response.json();
       
+      // Check if the API call was successful
+      if (!data.success || data.success !== 1 || !data.results || data.results.length === 0) {
+        throw new Error('No profile data found or API request failed');
+      }
+
+      // Get the first result from the results array
+      const profileData = data.results[0];
+      
       // Transform the API response to our format
       const extractedProfile: LinkedInProfile = {
-        name: data.name || data.fullName || username,
-        headline: data.headline || data.title || '',
-        location: data.location || data.geoLocation || '',
-        summary: data.summary || data.description || data.about || '',
-        experience: data.experience ? data.experience.map((exp: any) => ({
-          title: exp.title || exp.position || '',
-          company: exp.company || exp.companyName || '',
-          duration: exp.duration || exp.period || '',
-          description: exp.description || ''
+        name: profileData.name || username,
+        headline: profileData.sub_title || profileData.title || '',
+        location: profileData.location || '',
+        summary: '', // API doesn't provide summary, will be empty
+        experience: profileData.company_name ? [{
+          title: profileData.company_position || 'Current Position',
+          company: profileData.company_name,
+          duration: 'Current',
+          description: profileData.sub_title || ''
+        }] : [],
+        education: profileData.education ? profileData.education.map((edu: any) => ({
+          school: edu.school_name || '',
+          degree: edu.degree_name || '',
+          field: edu.field_of_study || '',
+          years: '' // API doesn't provide years
         })) : [],
-        education: data.education ? data.education.map((edu: any) => ({
-          school: edu.school || edu.institution || '',
-          degree: edu.degree || '',
-          field: edu.field || edu.fieldOfStudy || '',
-          years: edu.years || edu.period || ''
-        })) : [],
-        skills: data.skills || [],
-        connections: data.connectionsCount || data.connections || 0,
-        profileUrl: data.linkedInUrl || data.url || `https://linkedin.com/in/${username}`,
-        imageUrl: data.profilePicture || data.imageUrl || data.avatar
+        skills: profileData.skills || [],
+        connections: profileData.followers_count || 0,
+        profileUrl: `https://linkedin.com/in/${profileData.username || username}`,
+        imageUrl: profileData.image
       };
+
+      // ONLY deduct credits AFTER successful API response
+      const creditCheck = await CreditService.checkAndDeductCredits(
+        userId,
+        'linkedin' as ServiceType,
+        { username: username.trim(), extractedData: true, profileId: profileData.id }
+      );
+
+      if (!creditCheck.success) {
+        // This shouldn't happen often since we already got data, but handle gracefully
+        console.error('Credit deduction failed after successful API call:', creditCheck.error);
+        return NextResponse.json({
+          success: false,
+          error: 'Credit deduction failed. Please contact support.'
+        }, { status: 500 });
+      }
 
       const processingTime = Date.now() - startTime;
 
@@ -218,6 +240,12 @@ export async function POST(request: NextRequest) {
         suggestions
       };
 
+      // Update request status to completed
+      await RequestLogService.updateRequestStatus(
+        creditCheck.requestId!,
+        'completed'
+      );
+
       // Log successful response with complete data to history
       await RequestLogService.logResponse(
         userId,
@@ -235,10 +263,44 @@ export async function POST(request: NextRequest) {
             experienceCount: extractedProfile.experience.length,
             educationCount: extractedProfile.education.length,
             skillsCount: extractedProfile.skills.length,
-            connections: extractedProfile.connections
+            connections: extractedProfile.connections,
+            hasImage: !!extractedProfile.imageUrl,
+            industry: profileData.industry || ''
           }
         },
         processingTime
+      );
+
+      // SAVE PROFILE DATA TO LINKEDIN_PROFILES COLLECTION for future use
+      const db = getDbManager(process.env.MONGODB_URI!);
+      await db.connect();
+      const database = await db.getDb();
+      const linkedinProfilesCollection = database.collection('linkedin_profiles');
+      
+      // Upsert the profile data (update if exists, create if not)
+      await linkedinProfilesCollection.updateOne(
+        { 
+          userId: new (await import('mongodb')).ObjectId(userId),
+          username: profileData.username || username.trim()
+        },
+        {
+          $set: {
+            profileData: extractedProfile,
+            rawApiResponse: profileData,
+            analysisResults: {
+              score,
+              strengths,
+              weaknesses,
+              suggestions
+            },
+            lastUpdated: new Date(),
+            requestId: creditCheck.requestId
+          },
+          $setOnInsert: {
+            createdAt: new Date()
+          }
+        },
+        { upsert: true }
       );
 
       return NextResponse.json({
@@ -250,13 +312,8 @@ export async function POST(request: NextRequest) {
       } as LinkedInExtractResponse);
 
     } catch (apiError) {
-      // Update request status on API failure
-      await RequestLogService.updateRequestStatus(
-        creditCheck.requestId!,
-        'failed',
-        apiError instanceof Error ? apiError.message : 'LinkedIn extraction API call failed'
-      );
-
+      // API call failed, no credits were deducted, so just return error
+      console.error('LinkedIn extraction API failed:', apiError);
       return NextResponse.json({
         success: false,
         error: apiError instanceof Error ? apiError.message : 'Profile extraction failed'

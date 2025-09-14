@@ -265,6 +265,12 @@ export async function POST(request: NextRequest) {
         suggestions: analysisData.suggestions || []
       };
 
+      // Update request status to completed
+      await RequestLogService.updateRequestStatus(
+        creditCheck.requestId!,
+        'completed'
+      );
+
       // Log successful response
       await RequestLogService.logResponse(
         userId,

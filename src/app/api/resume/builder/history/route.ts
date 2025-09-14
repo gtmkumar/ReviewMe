@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
     await db.connect();
 
     const userId = new ObjectId(session.user.id);
-    const resumeBuilderCollection = await db.getCollection('resume_builder');
+    const database = await db.getDb();
+    const resumeBuilderCollection = database.collection('resume_builder');
 
     // Get resume versions with pagination
     const [resumes, totalCount] = await Promise.all([

@@ -75,7 +75,8 @@ export async function POST(request: NextRequest) {
         );
 
         // Save resume to main collection with versioning
-        const resumeBuilderCollection = await db.getCollection('resume_builder');
+        const database = await db.getDb();
+        const resumeBuilderCollection = database.collection('resume_builder');
         
         // Get current version number
         const latestResume = await resumeBuilderCollection.findOne(
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
         const result = await resumeBuilderCollection.insertOne(resumeDocument, { session: session_db });
 
         // Log credit transaction
-        const creditTransactionsCollection = await db.getCollection('credit_transactions');
+        const creditTransactionsCollection = database.collection('credit_transactions');
         await creditTransactionsCollection.insertOne({
           userId,
           serviceType: 'resume_builder',
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Clean up draft if exists
-        const resumeDraftsCollection = await db.getCollection('resume_drafts');
+        const resumeDraftsCollection = database.collection('resume_drafts');
         await resumeDraftsCollection.deleteOne({ userId }, { session: session_db });
       });
 
@@ -209,7 +210,8 @@ function calculateCompletedSections(resumeData: any): number {
 
 // Helper function to get latest version
 async function getLatestVersion(db: any, userId: ObjectId): Promise<number> {
-  const resumeBuilderCollection = await db.getCollection('resume_builder');
+  const database = await db.getDb();
+  const resumeBuilderCollection = database.collection('resume_builder');
   const latestResume = await resumeBuilderCollection.findOne(
     { userId },
     { sort: { version: -1 } }

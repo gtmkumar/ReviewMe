@@ -4,6 +4,82 @@ import { authOptions } from '@/lib/auth';
 import { getDbManager } from '@/lib/database';
 import { ObjectId } from 'mongodb';
 
+// Helper function to calculate GitHub score from analytics data
+function calculateGitHubScore(analyticsData: any): number {
+  if (!analyticsData) return 0;
+  
+  const { user, totalStats, repositories } = analyticsData;
+  let score = 0;
+  
+  // Basic profile completeness (20 points)
+  if (user.name) score += 5;
+  if (user.bio) score += 5;
+  if (user.location) score += 3;
+  if (user.blog) score += 3;
+  if (user.company) score += 4;
+  
+  // Repository activity (30 points)
+  const repoCount = user.public_repos;
+  if (repoCount > 0) score += Math.min(repoCount * 2, 15);
+  
+  if (totalStats.totalStars > 0) score += Math.min(totalStats.totalStars, 15);
+  
+  // Social presence (20 points)
+  const followers = user.followers;
+  if (followers > 0) score += Math.min(Math.floor(followers / 5), 10);
+  
+  const following = user.following;
+  if (following > 0) score += Math.min(Math.floor(following / 10), 10);
+  
+  // Account age and activity (30 points)
+  const accountAge = new Date().getFullYear() - new Date(user.created_at).getFullYear();
+  score += Math.min(accountAge * 3, 15);
+  
+  // Recent activity (based on repository count)
+  score += Math.min(repositories.length * 2, 15);
+  
+  return Math.min(score, 100);
+}
+
+// Helper function to generate GitHub suggestions
+function generateGitHubSuggestions(analyticsData: any): string[] {
+  if (!analyticsData) return [];
+  
+  const { user, totalStats, repositories } = analyticsData;
+  const suggestions = [];
+  
+  if (!user.bio) {
+    suggestions.push('Add a compelling bio to your GitHub profile');
+  }
+  
+  if (!user.blog) {
+    suggestions.push('Link your portfolio or personal website');
+  }
+  
+  if (totalStats.totalStars < 10) {
+    suggestions.push('Focus on creating quality repositories that can attract more stars');
+  }
+  
+  if (user.followers < 20) {
+    suggestions.push('Engage with the GitHub community to build your following');
+  }
+  
+  if (repositories.length < 5) {
+    suggestions.push('Create more repositories to showcase your skills');
+  }
+  
+  if (totalStats.languageCount < 3) {
+    suggestions.push('Diversify your programming languages to show versatility');
+  }
+  
+  const readmeCount = repositories.filter((repo: any) => repo.description).length;
+  if (readmeCount < repositories.length * 0.7) {
+    suggestions.push('Add descriptions to more of your repositories');
+  }
+  
+  return suggestions.slice(0, 5); // Limit to top 5 suggestions
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,7 +119,10 @@ export async function GET(request: NextRequest) {
       serviceResponses,
       recommendations,
       blogDocuments,
-      preferences
+      preferences,
+      githubAnalytics,
+      linkedinProfiles,
+      resumeAnalysis
     ] = await Promise.all([
       profilesCollection.findOne({ userId }),
       repositoriesCollection.find({ userId }).toArray(),
@@ -51,23 +130,30 @@ export async function GET(request: NextRequest) {
       serviceResponsesCollection.find({ userId }).toArray(),
       recommendationsCollection.find({ userId, isCompleted: false, isDismissed: false }).limit(5).toArray(),
       blogsCollection.find({ userId }).sort({ createdAt: -1 }).limit(5).toArray(),
-      preferencesCollection.findOne({ userId })
+      preferencesCollection.findOne({ userId }),
+      database.collection('github_analytics').findOne({ userId: new ObjectId(userId) }),
+      database.collection('linkedin_profiles').findOne({ userId: new ObjectId(userId) }),
+      database.collection('resume_analysis').findOne(
+        { userId: new ObjectId(userId) },
+        { sort: { createdAt: -1 } }
+      )
     ]);
 
-    // Calculate scores
-    const githubScore = userProfile?.github?.score?.overall || 0;
-    const linkedinScore = userProfile?.linkedin?.score?.overall || 0;
-    const resumeScore = userProfile?.resume?.score?.overall || 0;
-    const blogsScore = 0; // TODO: Implement blogs scoring
+    // Calculate scores from collections data
+    const githubScore = githubAnalytics?.analyticsData ? calculateGitHubScore(githubAnalytics.analyticsData) : (userProfile?.github?.score?.overall || 0);
+    const linkedinScore = linkedinProfiles?.analysisResults?.score || (userProfile?.linkedin?.score?.overall || 0);
+    const resumeScore = resumeAnalysis?.externalApiResponse?.score || (userProfile?.resume?.score?.overall || 0);
+    
+    // Calculate blogs score from blog analytics
+    const blogsScore = blogDocuments.length > 0 
+      ? Math.round(blogDocuments.reduce((acc, blog) => acc + ((blog as any).analytics?.score || 0), 0) / blogDocuments.length)
+      : 0;
     
     // Calculate overall score (average of available platforms)
     const availableScores = [githubScore, linkedinScore, resumeScore, blogsScore].filter(score => score > 0);
     const overallScore = availableScores.length > 0 
       ? Math.round(availableScores.reduce((sum, score) => sum + score, 0) / availableScores.length)
       : 0;
-
-    // Count repositories
-    const repositoriesCount = githubRepositories.length;
 
     // Count total recommendations across all platforms
     const recommendationsCount = recommendations.length;
@@ -102,13 +188,17 @@ export async function GET(request: NextRequest) {
     const resume = getLatestServiceData('resume');
 
     // Get GitHub profile data if available
-    const githubProfile = github?.response?.profile || userProfile?.github;
+    const githubProfile = githubAnalytics?.analyticsData?.user || github?.response?.profile || userProfile?.github;
+    const githubAnalyticsData = githubAnalytics?.analyticsData;
+
+    // Count repositories from GitHub analytics or fallback to repositories collection (moved after githubAnalyticsData is defined)
+    const repositoriesCount = githubAnalyticsData?.repositories?.length || githubRepositories.length;
 
     // Get LinkedIn profile data if available  
-    const linkedinProfile = linkedin?.response || userProfile?.linkedin;
+    const linkedinProfile = linkedinProfiles?.profileData || linkedin?.response || userProfile?.linkedin;
 
-    // Get Resume data if available
-    const resumeData = resume?.response || userProfile?.resume;
+    // Check if we have resume data from the new analysis collection
+    const hasResumeData = !!resumeAnalysis;
 
     // Calculate platform statistics
     const stats = {
@@ -158,7 +248,12 @@ export async function GET(request: NextRequest) {
             following: githubProfile.following,
             publicRepos: githubProfile.public_repos,
             repositories: githubRepositories.slice(0, 5), // Top 5 for dashboard
-            lastUpdated: github?.lastUpdated
+            lastUpdated: githubAnalytics?.lastUpdated || github?.lastUpdated,
+            totalStars: githubAnalyticsData?.totalStats?.totalStars || 0,
+            totalForks: githubAnalyticsData?.totalStats?.totalForks || 0,
+            languages: githubAnalyticsData?.languageStats?.reposByLanguage || {},
+            profileData: githubAnalyticsData,
+            suggestions: githubAnalyticsData ? generateGitHubSuggestions(githubAnalyticsData) : []
           } : {
             connected: false,
             score: 0
@@ -167,23 +262,37 @@ export async function GET(request: NextRequest) {
           linkedin: linkedinProfile ? {
             connected: true,
             score: linkedinScore,
-            name: `${linkedinProfile.firstName || ''} ${linkedinProfile.lastName || ''}`.trim(),
+            name: linkedinProfile.name || `${linkedinProfile.firstName || ''} ${linkedinProfile.lastName || ''}`.trim(),
             headline: linkedinProfile.headline,
             location: linkedinProfile.location,
             industry: linkedinProfile.industry,
-            connectionCount: linkedinProfile.connectionCount,
-            lastUpdated: linkedin?.lastUpdated
+            connectionCount: linkedinProfile.connectionCount || linkedinProfile.connections,
+            lastUpdated: linkedinProfiles?.lastUpdated || linkedin?.lastUpdated,
+            experience: linkedinProfile.experience || [],
+            education: linkedinProfile.education || [],
+            skills: linkedinProfile.skills || [],
+            profileData: linkedinProfile,
+            strengths: linkedinProfiles?.analysisResults?.strengths || [],
+            weaknesses: linkedinProfiles?.analysisResults?.weaknesses || [],
+            suggestions: linkedinProfiles?.analysisResults?.suggestions || []
           } : {
             connected: false,
             score: 0
           },
           
-          resume: resumeData ? {
+          resume: resumeAnalysis ? {
             uploaded: true,
             score: resumeScore,
-            fileName: resumeData.fileName,
-            uploadedAt: resumeData.uploadedAt,
-            lastUpdated: resume?.lastUpdated
+            fileName: resumeAnalysis.fileName,
+            uploadedAt: resumeAnalysis.uploadedAt,
+            lastUpdated: resumeAnalysis.updatedAt,
+            analysis: {
+              score: resumeAnalysis.externalApiResponse?.score || 0,
+              feedback: resumeAnalysis.externalApiResponse?.feedback || [],
+              strengths: resumeAnalysis.analysisResults?.strengths || [],
+              weaknesses: resumeAnalysis.analysisResults?.weaknesses || [],
+              suggestions: resumeAnalysis.analysisResults?.suggestions || []
+            }
           } : {
             uploaded: false,
             score: 0
@@ -215,10 +324,10 @@ export async function GET(request: NextRequest) {
         completeness: {
           github: !!githubProfile,
           linkedin: !!linkedinProfile, 
-          resume: !!resumeData,
+          resume: hasResumeData,
           blogs: blogsCount > 0,
           overall: Math.round(
-            [!!githubProfile, !!linkedinProfile, !!resumeData, blogsCount > 0]
+            [!!githubProfile, !!linkedinProfile, hasResumeData, blogsCount > 0]
               .filter(Boolean).length / 4 * 100
           )
         }

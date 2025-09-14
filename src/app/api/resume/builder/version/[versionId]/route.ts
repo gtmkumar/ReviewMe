@@ -32,7 +32,8 @@ export async function GET(
     await db.connect();
 
     const userId = new ObjectId(session.user.id);
-    const resumeBuilderCollection = await db.getCollection('resume_builder');
+    const database = await db.getDb();
+    const resumeBuilderCollection = database.collection('resume_builder');
 
     // Find the specific version that belongs to the user
     const resume = await resumeBuilderCollection.findOne({
@@ -114,7 +115,8 @@ export async function POST(
     }
 
     // Find the version to restore
-    const resumeBuilderCollection = await db.getCollection('resume_builder');
+    const database = await db.getDb();
+    const resumeBuilderCollection = database.collection('resume_builder');
     const versionToRestore = await resumeBuilderCollection.findOne({
       _id: new ObjectId(versionId),
       userId
@@ -175,7 +177,7 @@ export async function POST(
         await resumeBuilderCollection.insertOne(restoredDocument, { session: session_db });
 
         // Log transaction
-        const creditTransactionsCollection = await db.getCollection('credit_transactions');
+        const creditTransactionsCollection = database.collection('credit_transactions');
         await creditTransactionsCollection.insertOne({
           userId,
           serviceType: 'resume_builder',

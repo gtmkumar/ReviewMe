@@ -8,7 +8,8 @@ import {
   Linkedin, User, Briefcase, GraduationCap, Users, 
   MapPin, ExternalLink, Search, RefreshCw, AlertCircle, 
   CheckCircle, Trophy, TrendingUp, Award, Building,
-  Calendar, Link as LinkIcon, Upload, FileText, CreditCard, History, Gift
+  Calendar, Link as LinkIcon, Upload, FileText, CreditCard, History, Gift,
+  Database, Zap
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,10 @@ export default function LinkedInPage() {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const [showTransactionSummary, setShowTransactionSummary] = useState(false);
+  const [savedProfileData, setSavedProfileData] = useState<any>(null);
+  const [currentUsername, setCurrentUsername] = useState('');
+  const [dataSource, setDataSource] = useState<'saved' | 'fresh' | null>(null);
+  const [loadingSavedData, setLoadingSavedData] = useState(true);
 
   // Manual input states
   const [manualData, setManualData] = useState({
@@ -80,7 +85,61 @@ export default function LinkedInPage() {
     
     // Load user credits
     loadUserCredits();
+    // Load saved profile data
+    loadSavedProfileData();
   }, [session, status, router]);
+
+  // Load saved LinkedIn profile data from database
+  const loadSavedProfileData = async (usernameParam?: string) => {
+    setLoadingSavedData(true);
+    try {
+      const url = usernameParam 
+        ? `/api/linkedin/profile?username=${encodeURIComponent(usernameParam)}`
+        : '/api/linkedin/profile';
+      
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setSavedProfileData(data.data);
+          setCurrentUsername(data.data.username);
+          setDataSource('saved');
+          
+          // Set username field if we have the data
+          if (data.data.username) {
+            setUsername(data.data.username);
+          }
+          
+          // Auto-populate profile with saved data
+          if (data.data.profileData) {
+            setProfile(data.data.profileData);
+          }
+        } else {
+          // No saved data found
+          setSavedProfileData(null);
+          setDataSource(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading saved profile data:', error);
+      // Don't show error to user, just means no saved data exists
+      setSavedProfileData(null);
+      setDataSource(null);
+    } finally {
+      setLoadingSavedData(false);
+    }
+  };
+
+  // Detect username change and load different profile data
+  const handleUsernameChange = (newUsername: string) => {
+    setUsername(newUsername);
+    
+    if (newUsername && newUsername !== currentUsername && newUsername.length > 2) {
+      // Username changed significantly, try to load saved data for this username
+      loadSavedProfileData(newUsername);
+    }
+  };
 
   const loadUserCredits = async () => {
     try {
@@ -139,9 +198,11 @@ export default function LinkedInPage() {
       
       // Store transaction details for summary display
       setTransactionDetails({
+        id: currentRequestId,
         amount: data.creditsUsed,
         serviceType: 'linkedin',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        description: 'LinkedIn URL Analysis'
       });
       setShowTransactionSummary(true);
       
@@ -175,6 +236,14 @@ export default function LinkedInPage() {
       return;
     }
 
+    // Check credits first before making any requests
+    if (credits < 15) {
+      setError(`Insufficient credits. You need 15 credits but only have ${credits}.`);
+      setShowInsufficientCreditsModal(true);
+      setShowCreditWarning(true);
+      return;
+    }
+
     setIsExtracting(true);
     setError('');
     setProfile(null);
@@ -205,6 +274,7 @@ export default function LinkedInPage() {
 
       // Set the extracted profile data
       setProfile(data.data.profile);
+      setDataSource('fresh'); // Mark as fresh data
       
       // Update credits and request tracking
       const currentRequestId = data.requestId;
@@ -214,9 +284,11 @@ export default function LinkedInPage() {
       
       // Store transaction details for summary display
       setTransactionDetails({
+        id: currentRequestId,
         amount: data.creditsUsed,
         serviceType: 'linkedin',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        description: 'LinkedIn Profile Extraction'
       });
       setShowTransactionSummary(true);
       
@@ -306,9 +378,11 @@ export default function LinkedInPage() {
       
       // Store transaction details for summary display
       setTransactionDetails({
+        id: currentRequestId,
         amount: data.creditsUsed,
         serviceType: 'linkedin',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        description: 'LinkedIn Manual Entry'
       });
       setShowTransactionSummary(true);
       
@@ -483,6 +557,52 @@ export default function LinkedInPage() {
             </p>
           </div>
 
+          {/* Data Source Indicator - Prominent Notification Bar */}
+          {dataSource && savedProfileData && (
+            <div className={cn(
+              "mb-6 p-4 rounded-lg border",
+              dataSource === 'saved' 
+                ? "bg-blue-50 border-blue-200"
+                : "bg-green-50 border-green-200"
+            )}>
+              <div className="flex items-center space-x-3">
+                {dataSource === 'saved' ? (
+                  <Database className="h-5 w-5 text-blue-600" />
+                ) : (
+                  <Zap className="h-5 w-5 text-green-600" />
+                )}
+                <div>
+                  <h3 className={cn(
+                    "font-medium",
+                    dataSource === 'saved' ? "text-blue-800" : "text-green-800"
+                  )}>
+                    {dataSource === 'saved' 
+                      ? 'Displaying Saved Profile Data' 
+                      : 'Fresh Profile Data Generated'
+                    }
+                  </h3>
+                  <p className={cn(
+                    "text-sm",
+                    dataSource === 'saved' ? "text-blue-700" : "text-green-700"
+                  )}>
+                    Username: {savedProfileData?.username || currentUsername} | Last updated: {savedProfileData?.lastUpdated ? new Date(savedProfileData.lastUpdated).toLocaleString() : new Date().toLocaleString()}
+                    {dataSource === 'saved' && ' | No credits charged for cached data'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading Saved Data */}
+          {loadingSavedData && (
+            <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <RefreshCw className="h-5 w-5 text-gray-600 animate-spin" />
+                <p className="text-gray-600">Loading saved profile data...</p>
+              </div>
+            </div>
+          )}
+
           {/* Method Selection */}
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="flex space-x-4 mb-6">
@@ -521,6 +641,8 @@ export default function LinkedInPage() {
               </button>
             </div>
 
+            {/* Original data source indicator removed - now displayed prominently above */}
+
             {analysisMethod === 'extract' ? (
               <form onSubmit={(e) => { e.preventDefault(); handleExtractProfile(); }}>
                 <div className="mb-4">
@@ -535,7 +657,7 @@ export default function LinkedInPage() {
                       type="text"
                       id="username"
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
                       placeholder="thedevankit"
                       required
@@ -778,11 +900,11 @@ export default function LinkedInPage() {
                         <span className="font-medium">Remaining Credits:</span> {credits}
                       </div>
                       <div>
-                        <span className="font-medium">Transaction ID:</span> {transactionDetails.id.slice(-8)}
+                        <span className="font-medium">Transaction ID:</span> {transactionDetails.id ? transactionDetails.id.slice(-8) : 'N/A'}
                       </div>
                     </div>
                     <p className="text-xs text-green-600 mt-2">
-                      {transactionDetails.description} • {new Date(transactionDetails.timestamp).toLocaleString()}
+                      {transactionDetails.description || 'LinkedIn Analysis'} • {new Date(transactionDetails.timestamp).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -790,8 +912,8 @@ export default function LinkedInPage() {
             )}
           </div>
 
-          {/* RedactAI Analyses Section */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          {/* RedactAI Analyses Section - COMMENTED OUT */}
+          {/* <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-linkedin/10 rounded-lg flex items-center justify-center">
@@ -809,7 +931,7 @@ export default function LinkedInPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Analysis Card 1 - Sample */}
-              <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+              {/* <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <Linkedin className="h-5 w-5 text-linkedin" />
@@ -832,10 +954,10 @@ export default function LinkedInPage() {
                     Start Analysis
                   </Link>
                 </div>
-              </div>
+              </div> */}
               
               {/* Analysis Card 2 - Coming Soon */}
-              <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+              {/* <div className="border border-gray-200 rounded-lg p-4 opacity-50">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <Users className="h-5 w-5 text-gray-400" />
@@ -853,10 +975,10 @@ export default function LinkedInPage() {
                   <span className="text-xs text-gray-500">20 credits</span>
                   <span className="text-gray-400 text-sm">Coming Soon</span>
                 </div>
-              </div>
+              </div> */}
               
               {/* Analysis Card 3 - Coming Soon */}
-              <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+              {/* <div className="border border-gray-200 rounded-lg p-4 opacity-50">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <TrendingUp className="h-5 w-5 text-gray-400" />
@@ -874,9 +996,9 @@ export default function LinkedInPage() {
                   <span className="text-xs text-gray-500">10 credits</span>
                   <span className="text-gray-400 text-sm">Coming Soon</span>
                 </div>
-              </div>
-            </div>
-          </div>
+              </div> */}
+            {/* </div>
+          </div> */}
 
           {/* Success Notification */}
           {showSuccessNotification && (

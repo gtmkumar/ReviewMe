@@ -294,6 +294,13 @@ export function ExperienceSection({ data, isExpanded, onToggle, onUpdate, genera
               <Plus className="h-5 w-5 mx-auto mb-2" />
               Add Work Experience
             </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Activities Section Component
 interface ActivitiesSectionProps {
   data: Activity[];

@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     await db.connect();
 
     const userId = new ObjectId(session.user.id);
-    const resumeDraftsCollection = await db.getCollection('resume_drafts');
+    const database = await db.getDb();
+    const resumeDraftsCollection = database.collection('resume_drafts');
     const now = new Date();
 
     // Upsert draft (update if exists, create if not)
@@ -79,7 +80,8 @@ export async function GET(request: NextRequest) {
     await db.connect();
 
     const userId = new ObjectId(session.user.id);
-    const resumeDraftsCollection = await db.getCollection('resume_drafts');
+    const database = await db.getDb();
+    const resumeDraftsCollection = database.collection('resume_drafts');
     
     const draft = await resumeDraftsCollection.findOne({ userId });
 

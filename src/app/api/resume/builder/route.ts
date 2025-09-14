@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
     await db.connect();
 
     // Get the user's latest resume builder data
-    const resumeBuilderCollection = await db.getCollection('resume_builder');
+    const database = await db.getDb();
+    const resumeBuilderCollection = database.collection('resume_builder');
     const latestResume = await resumeBuilderCollection.findOne(
       { userId: new ObjectId(session.user.id) },
       { sort: { updatedAt: -1 } }
@@ -209,7 +210,8 @@ export async function POST(request: NextRequest) {
         );
 
         // Save resume data with version history
-        const resumeBuilderCollection = await db.getCollection('resume_builder');
+        const database = await db.getDb();
+        const resumeBuilderCollection = database.collection('resume_builder');
         const now = new Date();
         
         // Create new resume version
@@ -227,7 +229,7 @@ export async function POST(request: NextRequest) {
         await resumeBuilderCollection.insertOne(resumeDocument, { session: session_db });
 
         // Log the credit transaction
-        const creditTransactionsCollection = await db.getCollection('credit_transactions');
+        const creditTransactionsCollection = database.collection('credit_transactions');
         await creditTransactionsCollection.insertOne({
           userId,
           serviceType: 'resume_builder',

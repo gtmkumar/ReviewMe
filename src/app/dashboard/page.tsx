@@ -9,7 +9,10 @@ import {
   Upload, RefreshCw, CheckCircle, AlertCircle, TrendingUp,
   Users, Star, GitBranch, Calendar, Award, Target, Zap,
   Download, Eye, Share2, ArrowRight, Plus, CreditCard, History,
-  ChevronDown, ChevronUp, Clock, Minus, X
+  ChevronDown, ChevronUp, Clock, Minus, X, MapPin, Briefcase,
+  Code, Activity, Layers, Book, Building, ExternalLink, 
+  TrendingDown, GraduationCap, Mail, Phone, Lightbulb,
+  CheckSquare, AlertTriangle, Info
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -52,6 +55,11 @@ interface DashboardData {
         publicRepos?: number;
         repositories?: any[];
         lastUpdated?: string;
+        totalStars?: number;
+        totalForks?: number;
+        languages?: { [key: string]: number };
+        profileData?: any;
+        suggestions?: string[];
       };
       linkedin: {
         connected: boolean;
@@ -62,6 +70,13 @@ interface DashboardData {
         industry?: string;
         connectionCount?: number;
         lastUpdated?: string;
+        experience?: any[];
+        education?: any[];
+        skills?: string[];
+        profileData?: any;
+        strengths?: string[];
+        weaknesses?: string[];
+        suggestions?: string[];
       };
       resume: {
         uploaded: boolean;
@@ -107,6 +122,7 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [transactionSummary, setTransactionSummary] = useState<any[]>([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   
   // Initialize analytics tracking
   const { trackClick, trackPageView } = useAnalytics();
@@ -123,6 +139,13 @@ export default function DashboardPage() {
     // Load user credits
     loadUserCredits();
   }, [session, status, router]);
+  
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
   
   const loadUserCredits = async () => {
     try {
@@ -258,22 +281,8 @@ export default function DashboardPage() {
     overall: 0
   };
 
-  // Mock data for charts (would come from real analytics)
-  const scoreHistory = [
-    { date: '2024-01', score: Math.max(0, metrics.overallScore - 20) },
-    { date: '2024-02', score: Math.max(0, metrics.overallScore - 15) },
-    { date: '2024-03', score: Math.max(0, metrics.overallScore - 10) },
-    { date: '2024-04', score: Math.max(0, metrics.overallScore - 5) },
-    { date: '2024-05', score: Math.max(0, metrics.overallScore - 2) },
-    { date: '2024-06', score: metrics.overallScore },
-  ];
-
-  const scoreBreakdown = [
-    { name: 'GitHub', value: platforms.github.score, color: '#24292e' },
-    { name: 'LinkedIn', value: platforms.linkedin.score, color: '#0077b5' },
-    { name: 'Resume', value: platforms.resume.score, color: '#10B981' },
-    { name: 'Blogs', value: platforms.blogs.score, color: '#8B5CF6' },
-  ];
+  // Enhanced data for charts
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -629,58 +638,133 @@ export default function DashboardPage() {
             </Link>
 
             {/* LinkedIn Section */}
-            <Link href="/dashboard/linkedin" className="group">
-              <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 cursor-pointer">
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+              <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <Linkedin className="h-8 w-8 text-linkedin" />
                     <h3 className="text-xl font-semibold text-gray-900">LinkedIn Profile</h3>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-linkedin transition-colors" />
+                  <Link href="/dashboard/linkedin" className="text-linkedin hover:text-linkedin/80 transition-colors">
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
                 </div>
                 
-                <div className="text-center py-8">
-                  <Linkedin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 mb-3">
-                    Analyze your LinkedIn profile for professional optimization
-                  </p>
-                  <div className="flex items-center justify-center space-x-2 text-linkedin text-sm font-medium">
-                    <Plus className="h-4 w-4" />
-                    <span>Add LinkedIn Profile</span>
+                {platforms.linkedin.connected ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Profile Score</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-semibold text-linkedin">{platforms.linkedin.score}/100</span>
+                        {platforms.linkedin.lastUpdated && (
+                          <div className="w-2 h-2 bg-green-500 rounded-full" title="Data is fresh"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Name:</span>
+                        <span className="font-medium">{platforms.linkedin.name}</span>
+                      </div>
+                      {platforms.linkedin.headline && (
+                        <div className="flex items-start justify-between">
+                          <span className="text-gray-600">Headline:</span>
+                          <span className="font-medium text-right text-xs max-w-32 truncate">{platforms.linkedin.headline}</span>
+                        </div>
+                      )}
+                      {platforms.linkedin.connectionCount && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Connections:</span>
+                          <span className="font-medium">{platforms.linkedin.connectionCount}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-linkedin h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${platforms.linkedin.score}%` }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Linkedin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-3">
+                      Analyze your LinkedIn profile for professional optimization
+                    </p>
+                    <Link href="/dashboard/linkedin" className="flex items-center justify-center space-x-2 text-linkedin text-sm font-medium hover:text-linkedin/80 transition-colors">
+                      <Plus className="h-4 w-4" />
+                      <span>Add LinkedIn Profile</span>
+                    </Link>
+                  </div>
+                )}
               </div>
-            </Link>
+            </div>
 
             {/* Resume Section */}
-            <Link href="/dashboard/resume" className="group">
-              <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 cursor-pointer">
+            <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+              <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <FileText className="h-8 w-8 text-green-600" />
                     <h3 className="text-xl font-semibold text-gray-900">Resume Analysis</h3>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                  <Link href="/dashboard/resume" className="text-green-600 hover:text-green-500 transition-colors">
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
                 </div>
                 
-                {dashboardData?.data?.platforms?.resume?.uploaded ? (
-                  <div className="space-y-3">
+                {platforms.resume.uploaded ? (
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">ATS Score</span>
-                      <span className="text-lg font-semibold text-green-600">{dashboardData.data.platforms.resume.score}/100</span>
+                      <span className="text-lg font-semibold text-green-600">{platforms.resume.score}/100</span>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {dashboardData.data.platforms.resume.fileName}
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">File:</span>
+                        <span className="font-medium">{platforms.resume.fileName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Uploaded:</span>
+                        <span className="font-medium">
+                          {platforms.resume.uploadedAt ? new Date(platforms.resume.uploadedAt).toLocaleDateString() : 'Unknown'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Uploaded: {dashboardData.data.platforms.resume.uploadedAt ? new Date(dashboardData.data.platforms.resume.uploadedAt).toLocaleDateString() : 'Unknown'}
-                    </div>
+                    
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className="bg-green-500 h-2 rounded-full" 
-                        style={{ width: `${dashboardData.data.platforms.resume.score}%` }}
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${platforms.resume.score}%` }}
                       ></div>
                     </div>
+                    
+                    <button
+                      onClick={() => toggleSection('resume-details')}
+                      className="w-full flex items-center justify-between py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                      <span>View Analysis</span>
+                      {expandedSections['resume-details'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
+                    
+                    {expandedSections['resume-details'] && (
+                      <div className="space-y-3 border-t pt-4">
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="bg-green-50 p-2 rounded">
+                            <div className="font-medium text-green-800">Strengths</div>
+                            <div className="text-green-600">ATS Compatible</div>
+                          </div>
+                          <div className="bg-yellow-50 p-2 rounded">
+                            <div className="font-medium text-yellow-800">Suggestions</div>
+                            <div className="text-yellow-600">Add more keywords</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -688,37 +772,382 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-600 mb-3">
                       Upload your resume for ATS compatibility analysis
                     </p>
-                    <div className="flex items-center justify-center space-x-2 text-green-600 text-sm font-medium">
+                    <Link href="/dashboard/resume" className="flex items-center justify-center space-x-2 text-green-600 text-sm font-medium hover:text-green-500 transition-colors">
                       <Upload className="h-4 w-4" />
                       <span>Upload Resume</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Comprehensive Analytics Dashboard */}
+          <div className="space-y-8 mb-8">
+            
+            {/* Professional Summary Cards */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Professional Summary</h3>
+                <button
+                  onClick={() => toggleSection('professional-summary')}
+                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <span>Details</span>
+                  {expandedSections['professional-summary'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-github">
+                    {platforms.github.publicRepos || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Projects</div>
+                  <div className="mt-1">
+                    <Code className="h-4 w-4 text-github mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-linkedin">
+                    {platforms.linkedin.connectionCount || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Connections</div>
+                  <div className="mt-1">
+                    <Users className="h-4 w-4 text-linkedin mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {platforms.linkedin.experience?.length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Experience</div>
+                  <div className="mt-1">
+                    <Briefcase className="h-4 w-4 text-green-600 mx-auto" />
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {platforms.linkedin.skills?.length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Skills</div>
+                  <div className="mt-1">
+                    <Award className="h-4 w-4 text-purple-600 mx-auto" />
+                  </div>
+                </div>
+              </div>
+              
+              {expandedSections['professional-summary'] && (
+                <div className="mt-6 pt-6 border-t">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-3">Technical Profile</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">GitHub Score:</span>
+                          <span className="font-medium">{platforms.github.score}/100</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Stars:</span>
+                          <span className="font-medium">{platforms.github.totalStars || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Followers:</span>
+                          <span className="font-medium">{platforms.github.followers || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-3">Professional Profile</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">LinkedIn Score:</span>
+                          <span className="font-medium">{platforms.linkedin.score}/100</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Resume Score:</span>
+                          <span className="font-medium">{platforms.resume.score}/100</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Education:</span>
+                          <span className="font-medium">{platforms.linkedin.education?.length || 0} degrees</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* LinkedIn Detailed Analysis */}
+            {platforms.linkedin.connected && ((platforms.linkedin.strengths?.length || 0) > 0 || (platforms.linkedin.weaknesses?.length || 0) > 0) && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">LinkedIn Profile Analysis</h3>
+                  <button
+                    onClick={() => toggleSection('linkedin-analysis')}
+                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    <span>Details</span>
+                    {expandedSections['linkedin-analysis'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Strengths */}
+                  {platforms.linkedin.strengths && platforms.linkedin.strengths.length > 0 && (
+                    <div>
+                      <h4 className="flex items-center space-x-2 font-medium text-green-700 mb-3">
+                        <CheckCircle className="h-5 w-5" />
+                        <span>Strengths</span>
+                      </h4>
+                      <div className="space-y-2">
+                        {platforms.linkedin.strengths.map((strength, index) => (
+                          <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 rounded">
+                            <CheckSquare className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-green-800">{strength}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Weaknesses */}
+                  {platforms.linkedin.weaknesses && platforms.linkedin.weaknesses.length > 0 && (
+                    <div>
+                      <h4 className="flex items-center space-x-2 font-medium text-yellow-700 mb-3">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span>Areas for Improvement</span>
+                      </h4>
+                      <div className="space-y-2">
+                        {platforms.linkedin.weaknesses.map((weakness, index) => (
+                          <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 rounded">
+                            <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-yellow-800">{weakness}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {expandedSections['linkedin-analysis'] && platforms.linkedin.suggestions && platforms.linkedin.suggestions.length > 0 && (
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="flex items-center space-x-2 font-medium text-blue-700 mb-3">
+                      <Lightbulb className="h-5 w-5" />
+                      <span>Detailed Recommendations</span>
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3">
+                      {platforms.linkedin.suggestions.map((suggestion, index) => (
+                        <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                          <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-blue-800">{suggestion}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
-            </Link>
-          </div>
+            )}
 
-          {/* Score Overview Chart */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Score Breakdown</h3>
-            <div className="h-40">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={scoreHistory}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="#2563eb" 
-                    strokeWidth={2}
-                    dot={{ fill: '#2563eb' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Score Breakdown Pie Chart */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Profile Score Distribution</h3>
+                  <button
+                    onClick={() => toggleSection('score-breakdown')}
+                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    {expandedSections['score-breakdown'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </button>
+                </div>
+                
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'GitHub', value: platforms.github.score, color: '#24292e' },
+                          { name: 'LinkedIn', value: platforms.linkedin.score, color: '#0077b5' },
+                          { name: 'Resume', value: platforms.resume.score, color: '#10B981' },
+                          { name: 'Blogs', value: platforms.blogs.score, color: '#8B5CF6' }
+                        ].filter(item => item.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {[
+                          { name: 'GitHub', value: platforms.github.score, color: '#24292e' },
+                          { name: 'LinkedIn', value: platforms.linkedin.score, color: '#0077b5' },
+                          { name: 'Resume', value: platforms.resume.score, color: '#10B981' },
+                          { name: 'Blogs', value: platforms.blogs.score, color: '#8B5CF6' }
+                        ].filter(item => item.value > 0).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {expandedSections['score-breakdown'] && (
+                  <div className="mt-4 space-y-2">
+                    {[
+                      { name: 'GitHub', value: platforms.github.score, color: '#24292e', connected: platforms.github.connected },
+                      { name: 'LinkedIn', value: platforms.linkedin.score, color: '#0077b5', connected: platforms.linkedin.connected },
+                      { name: 'Resume', value: platforms.resume.score, color: '#10B981', connected: platforms.resume.uploaded },
+                      { name: 'Blogs', value: platforms.blogs.score, color: '#8B5CF6', connected: platforms.blogs.connected }
+                    ].map((item) => (
+                      <div key={item.name} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: item.color }}
+                          ></div>
+                          <span className="text-sm text-gray-700">{item.name}</span>
+                          {!item.connected && (
+                            <span className="text-xs text-gray-400">(Not connected)</span>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium">{item.value}/100</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Improvement Suggestions */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Improvement Suggestions</h3>
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                </div>
+                
+                <div className="space-y-4">
+                  {!platforms.github.connected && (
+                    <div className="flex items-start space-x-3 p-3 bg-github/5 rounded-lg">
+                      <AlertTriangle className="h-5 w-5 text-github flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-sm font-medium text-github">Connect GitHub</h4>
+                        <p className="text-xs text-gray-600">Showcase your coding projects and technical skills</p>
+                        <Link href="/dashboard/github" className="text-xs text-github hover:underline">Connect now →</Link>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* GitHub Specific Suggestions */}
+                  {platforms.github.connected && platforms.github.suggestions && platforms.github.suggestions.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-github mb-2">GitHub Improvements</h4>
+                      {platforms.github.suggestions.slice(0, 3).map((suggestion, index) => (
+                        <div key={index} className="flex items-start space-x-3 p-2 bg-github/5 rounded">
+                          <Lightbulb className="h-4 w-4 text-github flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-gray-700">{suggestion}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {!platforms.linkedin.connected && (
+                    <div className="flex items-start space-x-3 p-3 bg-linkedin/5 rounded-lg">
+                      <AlertTriangle className="h-5 w-5 text-linkedin flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-sm font-medium text-linkedin">Analyze LinkedIn</h4>
+                        <p className="text-xs text-gray-600">Optimize your professional profile and network</p>
+                        <Link href="/dashboard/linkedin" className="text-xs text-linkedin hover:underline">Analyze now →</Link>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* LinkedIn Specific Suggestions */}
+                  {platforms.linkedin.connected && platforms.linkedin.suggestions && platforms.linkedin.suggestions.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-linkedin mb-2">LinkedIn Improvements</h4>
+                      {platforms.linkedin.suggestions.slice(0, 3).map((suggestion, index) => (
+                        <div key={index} className="flex items-start space-x-3 p-2 bg-linkedin/5 rounded">
+                          <Lightbulb className="h-4 w-4 text-linkedin flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-gray-700">{suggestion}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {!platforms.resume.uploaded && (
+                    <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                      <AlertTriangle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-sm font-medium text-green-600">Upload Resume</h4>
+                        <p className="text-xs text-gray-600">Get ATS compatibility analysis and improvement tips</p>
+                        <Link href="/dashboard/resume" className="text-xs text-green-600 hover:underline">Upload now →</Link>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {(platforms.github.connected || platforms.linkedin.connected || platforms.resume.uploaded) && (
+                    <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                      <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-sm font-medium text-blue-600">Keep Profiles Updated</h4>
+                        <p className="text-xs text-gray-600">Regular updates help maintain high scores and relevance</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Language Distribution Chart for GitHub */}
+          {platforms.github.connected && platforms.github.languages && Object.keys(platforms.github.languages).length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Programming Languages</h3>
+                <button
+                  onClick={() => toggleSection('language-breakdown')}
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {expandedSections['language-breakdown'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={Object.entries(platforms.github.languages || {}).map(([language, count]) => ({
+                    name: language,
+                    repositories: count,
+                    color: COLORS[Object.keys(platforms.github.languages || {}).indexOf(language) % COLORS.length]
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="repositories" fill="#24292e" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {expandedSections['language-breakdown'] && (
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.entries(platforms.github.languages || {}).map(([language, count]) => (
+                    <div key={language} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <span className="text-sm font-medium text-gray-700">{language}</span>
+                      <span className="text-sm text-gray-600">{count} repo{count !== 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Recent Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

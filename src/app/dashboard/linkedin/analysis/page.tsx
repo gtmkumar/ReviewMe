@@ -81,6 +81,9 @@ export default function LinkedInAnalysisPage() {
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistoryItem[]>([]);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [savedProfileData, setSavedProfileData] = useState<any>(null);
+  const [currentUsername, setCurrentUsername] = useState('');
+  const [dataSource, setDataSource] = useState<'saved' | 'fresh' | null>(null);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -88,7 +91,74 @@ export default function LinkedInAnalysisPage() {
     
     loadUserCredits();
     loadAnalysisHistory();
+    loadSavedProfileData(); // Load saved profile data by default
   }, [session, status, router]);
+
+  // Load saved LinkedIn profile data from database
+  const loadSavedProfileData = async (username?: string) => {
+    try {
+      const url = username 
+        ? `/api/linkedin/profile?username=${encodeURIComponent(username)}`
+        : '/api/linkedin/profile';
+      
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setSavedProfileData(data.data);
+          setCurrentUsername(data.data.username);
+          setDataSource('saved'); // Indicate this is saved data
+          
+          // Set profile URL if we have the data
+          if (data.data.profileData?.profileUrl) {
+            setProfileUrl(data.data.profileData.profileUrl);
+          }
+          
+          // Auto-populate analysis result with saved data
+          if (data.data.profileData && data.data.analysisResults) {
+            setAnalysisResult({
+              username: data.data.username,
+              profileUrl: data.data.profileData.profileUrl || '',
+              analysis: {
+                summary: 'Profile analysis based on saved data',
+                score: data.data.analysisResults.score || 0,
+                strengths: data.data.analysisResults.strengths || [],
+                weaknesses: data.data.analysisResults.weaknesses || [],
+                suggestions: data.data.analysisResults.suggestions || [],
+                sections: {}
+              },
+              rawMarkdown: '',
+              score: data.data.analysisResults.score || 0,
+              strengths: data.data.analysisResults.strengths || [],
+              weaknesses: data.data.analysisResults.weaknesses || [],
+              suggestions: data.data.analysisResults.suggestions || []
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading saved profile data:', error);
+      // Don't show error to user, just means no saved data exists
+    }
+  };
+
+  // Detect username change and load different profile data
+  const extractUsernameFromUrl = (url: string): string => {
+    const match = url.match(/linkedin\.com\/in\/([^\/?]+)/);
+    return match ? match[1] : '';
+  };
+
+  // Handle profile URL change
+  const handleProfileUrlChange = (newUrl: string) => {
+    setProfileUrl(newUrl);
+    
+    const newUsername = extractUsernameFromUrl(newUrl);
+    if (newUsername && newUsername !== currentUsername) {
+      // Username changed, load different profile data
+      loadSavedProfileData(newUsername);
+    }
+  };
 
   const loadUserCredits = async () => {
     try {
@@ -146,6 +216,7 @@ export default function LinkedInAnalysisPage() {
       if (result.success && result.data) {
         setAnalysisResult(result.data);
         setCredits(result.remainingCredits || credits);
+        setDataSource('fresh'); // Indicate this is fresh analysis data
         setShowSuccessNotification(true);
         setTimeout(() => setShowSuccessNotification(false), 5000);
         
@@ -209,7 +280,8 @@ export default function LinkedInAnalysisPage() {
                 <Linkedin className="h-8 w-8 text-linkedin" />
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">LinkedIn Profile Analysis</h1>
-                  <p className="text-gray-600">Powered by RedactAI - Advanced LinkedIn Profile Review</p>
+                  {/* <p className="text-gray-600">Powered by RedactAI - Advanced LinkedIn Profile Review</p> */}
+                  <p className="text-gray-600">Advanced LinkedIn Profile Analysis</p>
                 </div>
               </div>
               
@@ -239,7 +311,7 @@ export default function LinkedInAnalysisPage() {
                     type="url"
                     id="profileUrl"
                     value={profileUrl}
-                    onChange={(e) => setProfileUrl(e.target.value)}
+                    onChange={(e) => handleProfileUrlChange(e.target.value)}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-linkedin focus:border-linkedin text-lg"
                     placeholder="https://linkedin.com/in/your-username"
                     required
@@ -293,6 +365,27 @@ export default function LinkedInAnalysisPage() {
           {/* Analysis Result */}
           {analysisResult && (
             <div className="space-y-8">
+              
+              {/* Data Source Indicator */}
+              {dataSource && (
+                <div className={`p-4 rounded-lg border ${dataSource === 'saved' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                  <div className="flex items-center space-x-2">
+                    {dataSource === 'saved' ? (
+                      <>
+                        <Eye className="h-5 w-5 text-blue-600" />
+                        <span className="text-blue-800 font-medium">Viewing Saved Profile Data</span>
+                        <span className="text-blue-600 text-sm">Last updated: {savedProfileData?.lastUpdated ? new Date(savedProfileData.lastUpdated).toLocaleDateString() : 'Unknown'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-5 w-5 text-green-600" />
+                        <span className="text-green-800 font-medium">Fresh Analysis Data</span>
+                        <span className="text-green-600 text-sm">Just analyzed</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* Profile Overview */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

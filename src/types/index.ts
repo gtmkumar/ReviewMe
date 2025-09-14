@@ -64,9 +64,12 @@ export interface BlogAnalytics {
   totalArticles: number;
   averageReadTime?: number;
   topTags: string[];
-  publishingFrequency?: 'weekly' | 'monthly' | 'quarterly' | 'irregular';
-  latestPost?: Date;
-  oldestPost?: Date;
+  totalReactions?: number;
+  totalComments?: number;
+  publishingFrequency?: string;
+  latestPost?: Date | string;
+  oldestPost?: Date | string;
+  score?: number;
 }
 
 // Contact Me / Support Types
