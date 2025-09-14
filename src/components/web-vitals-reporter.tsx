@@ -10,10 +10,11 @@ export default function WebVitalsReporter() {
     // Dynamic import to avoid SSR issues
     const loadWebVitals = async () => {
       try {
-        const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
+        const webVitals = await import('web-vitals');
+        const { onCLS, onFID, onFCP, onLCP, onTTFB } = webVitals;
 
         // Largest Contentful Paint
-        getLCP((metric) => {
+        onLCP((metric) => {
           tracker.trackWebVital({
             id: metric.id,
             name: 'LCP',
@@ -25,7 +26,7 @@ export default function WebVitalsReporter() {
         });
 
         // First Input Delay
-        getFID((metric) => {
+        onFID((metric) => {
           tracker.trackWebVital({
             id: metric.id,
             name: 'FID',
@@ -37,7 +38,7 @@ export default function WebVitalsReporter() {
         });
 
         // Cumulative Layout Shift
-        getCLS((metric) => {
+        onCLS((metric) => {
           tracker.trackWebVital({
             id: metric.id,
             name: 'CLS',
@@ -49,7 +50,7 @@ export default function WebVitalsReporter() {
         });
 
         // First Contentful Paint
-        getFCP((metric) => {
+        onFCP((metric) => {
           tracker.trackWebVital({
             id: metric.id,
             name: 'FCP',
@@ -61,7 +62,7 @@ export default function WebVitalsReporter() {
         });
 
         // Time to First Byte
-        getTTFB((metric) => {
+        onTTFB((metric) => {
           tracker.trackWebVital({
             id: metric.id,
             name: 'TTFB',
@@ -73,18 +74,23 @@ export default function WebVitalsReporter() {
         });
 
         // Try to get INP if available (newer metric)
-        if ('getINP' in await import('web-vitals')) {
-          const { getINP } = await import('web-vitals');
-          getINP((metric) => {
-            tracker.trackWebVital({
-              id: metric.id,
-              name: 'INP',
-              value: metric.value,
-              rating: tracker.getRating('INP', metric.value),
-              delta: metric.delta,
-              navigationType: metric.navigationType,
+        try {
+          const { onINP } = webVitals;
+          if (onINP) {
+            onINP((metric) => {
+              tracker.trackWebVital({
+                id: metric.id,
+                name: 'INP',
+                value: metric.value,
+                rating: tracker.getRating('INP', metric.value),
+                delta: metric.delta,
+                navigationType: metric.navigationType,
+              });
             });
-          });
+          }
+        } catch (inpError) {
+          // INP not available in this version, continue without it
+          console.debug('INP metric not available in this web-vitals version');
         }
       } catch (error) {
         console.warn('Web Vitals library not available:', error);

@@ -663,22 +663,22 @@ export default function DashboardPage() {
                   <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
                 </div>
                 
-                {dashboardData?.resume ? (
+                {dashboardData?.data?.platforms?.resume?.uploaded ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">ATS Score</span>
-                      <span className="text-lg font-semibold text-green-600">{resumeScore}/100</span>
+                      <span className="text-lg font-semibold text-green-600">{dashboardData.data.platforms.resume.score}/100</span>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {dashboardData.resume.fileName}
+                      {dashboardData.data.platforms.resume.fileName}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Uploaded: {new Date(dashboardData.resume.uploadedAt).toLocaleDateString()}
+                      Uploaded: {dashboardData.data.platforms.resume.uploadedAt ? new Date(dashboardData.data.platforms.resume.uploadedAt).toLocaleDateString() : 'Unknown'}
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-green-500 h-2 rounded-full" 
-                        style={{ width: `${resumeScore}%` }}
+                        style={{ width: `${dashboardData.data.platforms.resume.score}%` }}
                       ></div>
                     </div>
                   </div>
@@ -724,7 +724,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* GitHub Repositories */}
-            {(dashboardData?.repositories?.length || 0) > 0 && (
+            {(dashboardData?.data?.platforms?.github?.repositories?.length || 0) > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Top Repositories</h3>
@@ -733,7 +733,7 @@ export default function DashboardPage() {
                   </Link>
                 </div>
                 <div className="space-y-4">
-                  {(dashboardData?.repositories || []).slice(0, 5).map((repo: any) => (
+                  {(dashboardData?.data?.platforms?.github?.repositories || []).slice(0, 5).map((repo: any) => (
                     <div key={repo.githubId} className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center">
@@ -761,7 +761,7 @@ export default function DashboardPage() {
             )}
 
             {/* Recommendations */}
-            {(dashboardData?.recommendations?.length || 0) > 0 && (
+            {(dashboardData?.data?.recommendations?.length || 0) > 0 && (
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -771,7 +771,7 @@ export default function DashboardPage() {
                     </Link>
                   </div>
                   <div className="space-y-3">
-                    {(dashboardData?.recommendations || []).slice(0, 3).map((rec: any) => (
+                    {(dashboardData?.data?.recommendations || []).slice(0, 3).map((rec: any) => (
                       <div key={rec._id} className="border-l-4 border-primary pl-4">
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-medium text-gray-900">{rec.title}</h4>
@@ -795,7 +795,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Getting Started Guide - Show when no data */}
-          {(!(dashboardData?.repositories?.length || 0) && !dashboardData?.resume && !(dashboardData?.recommendations?.length || 0)) && (
+          {(!(dashboardData?.data?.platforms?.github?.repositories?.length || 0) && !dashboardData?.data?.platforms?.resume?.uploaded && !(dashboardData?.data?.recommendations?.length || 0)) && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">
               <h3 className="text-lg font-medium text-blue-900 mb-4">Get Started with ReviewMe</h3>
               <p className="text-blue-700 mb-4">

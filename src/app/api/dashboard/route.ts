@@ -128,8 +128,8 @@ export async function GET(request: NextRequest) {
         lastRequestDate: resume?.lastUpdated
       },
       blogs: {
-        totalRequests: userRequests.filter(r => r.serviceType === 'blogs').length,
-        successfulRequests: userRequests.filter(r => r.serviceType === 'blogs' && r.status === 'completed').length,
+        totalRequests: 0, // Blogs are not tracked as service requests
+        successfulRequests: blogsCount, // Use blogs count as successful blogs
         lastRequestDate: blogDocuments.length > 0 ? blogDocuments[0].createdAt : null
       }
     };

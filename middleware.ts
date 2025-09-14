@@ -1,6 +1,7 @@
 import { withAuth } from 'next-auth/middleware';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { navigationTracker } from '@/lib/navigation-tracking';
+import type { NextRequestWithAuth } from 'next-auth/middleware';
 
 // Generate session ID for tracking
 function generateSessionId(): string {
@@ -8,21 +9,20 @@ function generateSessionId(): string {
 }
 
 // Get or create session ID from request
-function getSessionId(req: NextRequest): string {
+function getSessionId(req: NextRequestWithAuth): string {
   const existingSessionId = req.cookies.get('session-id')?.value;
   return existingSessionId || generateSessionId();
 }
 
 // Get client IP address
-function getClientIP(req: NextRequest): string {
+function getClientIP(req: NextRequestWithAuth): string {
   return req.headers.get('x-forwarded-for') || 
          req.headers.get('x-real-ip') || 
-         req.ip || 
          'unknown';
 }
 
 export default withAuth(
-  async function middleware(req: NextRequest) {
+  async function middleware(req: NextRequestWithAuth) {
     const token = req.nextauth.token;
     const isAuth = !!token;
     const isAuthPage = req.nextUrl.pathname.startsWith('/auth');

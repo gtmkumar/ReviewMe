@@ -53,9 +53,7 @@ export function Providers({ children, session }: ProvidersProps) {
         <WebVitalsReporter />
         <OfflineSupport />
         <ReactQueryDevtools 
-          initialIsOpen={false} 
-          position="bottom-right"
-          buttonPosition="bottom-right"
+          initialIsOpen={false}
         />
       </QueryClientProvider>
     </SessionProvider>

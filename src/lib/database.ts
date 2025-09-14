@@ -1,7 +1,7 @@
-import { MongoClient, Db, Collection } from 'mongodb';
+import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 
 export interface UserDocument {
-  _id?: string;
+  _id?: ObjectId | string;
   name: string;
   email: string;
   password?: string; // Only for credential users
@@ -56,7 +56,7 @@ export interface UserDocument {
 }
 
 export interface ProfileDocument {
-  _id?: string;
+  _id?: ObjectId | string;
   userId: string;
   profileScore: number;
   lastAnalyzed?: Date;
@@ -153,7 +153,7 @@ export interface ProfileDocument {
 }
 
 export interface PreferencesDocument {
-  _id?: string;
+  _id?: ObjectId | string;
   userId: string;
   theme: 'light' | 'dark' | 'system';
   notifications: {
@@ -179,7 +179,7 @@ export interface PreferencesDocument {
 }
 
 export interface IntegrationDocument {
-  _id?: string;
+  _id?: ObjectId | string;
   userId: string;
   type: 'github' | 'linkedin' | 'google';
   isConnected: boolean;
@@ -195,7 +195,7 @@ export interface IntegrationDocument {
 }
 
 export interface GitHubRepositoryDocument {
-  _id?: string;
+  _id?: ObjectId | string;
   userId: string;
   githubId: string;
   name: string;
@@ -1105,6 +1105,11 @@ export const createPreferences = async (userId: string): Promise<string> => {
     privacy: {
       profilePublic: false,
       analyticsOptOut: false,
+    },
+    personalization: {
+      recommendationTypes: [],
+      contentPreferences: [],
+      dashboardLayout: 'detailed',
     },
     createdAt: now,
     updatedAt: now,

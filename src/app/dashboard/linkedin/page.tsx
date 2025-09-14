@@ -48,11 +48,13 @@ export default function LinkedInPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [profileUrl, setProfileUrl] = useState('');
+  const [username, setUsername] = useState('');
   const [profile, setProfile] = useState<LinkedInProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState('');
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
-  const [analysisMethod, setAnalysisMethod] = useState<'url' | 'manual'>('url');
+  const [analysisMethod, setAnalysisMethod] = useState<'url' | 'manual' | 'extract'>('extract');
   const [credits, setCredits] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
   const [requestId, setRequestId] = useState<string | null>(null);
@@ -103,140 +105,55 @@ export default function LinkedInPage() {
     setError('');
     
     try {
-      // Check credits before processing
-      const creditCheckResponse = await fetch('/api/credits', {
+      // Use a mock endpoint that follows the same credit system pattern
+      const response = await fetch('/api/linkedin/mock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'check',
-          serviceType: 'linkedin'
+          profileUrl: url
         })
       });
 
-      const creditCheckData = await creditCheckResponse.json();
+      const data = await response.json();
       
-      if (!creditCheckResponse.ok) {
-        throw new Error(creditCheckData.error || 'Failed to check credits');
+      if (!response.ok) {
+        if (data.error?.includes('Insufficient credits')) {
+          setShowInsufficientCreditsModal(true);
+          setShowCreditWarning(true);
+        }
+        throw new Error(data.error || 'Failed to extract LinkedIn data');
       }
 
-      const requiredCredits = creditCheckData.costs.linkedin;
-      if (creditCheckData.credits < requiredCredits) {
-        setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
-        setShowInsufficientCreditsModal(true);
-        setShowCreditWarning(true);
-        return;
+      if (!data.success) {
+        throw new Error(data.error || 'LinkedIn extraction failed');
       }
 
-      const startTime = Date.now();
+      // Set the profile data
+      setProfile(data.data.profile);
       
-      // Note: Direct scraping of LinkedIn is not allowed and blocked by CORS
-      // This is a simulation of what the data extraction would look like
-      // In a real implementation, you'd need:
-      // 1. A backend service to scrape the public profile
-      // 2. LinkedIn API (which requires company partnership)
-      // 3. User manual input or PDF/HTML upload
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Mock profile data based on URL
-      const username = url.split('/in/')[1]?.replace('/', '') || 'user';
+      // Update credits and request tracking
+      const currentRequestId = data.requestId;
+      setRequestId(currentRequestId);
+      setCredits(data.remainingCredits);
+      setShowCreditWarning(data.remainingCredits < 20);
       
-      const mockProfile: LinkedInProfile = {
-        name: 'John Doe',
-        headline: 'Senior Software Engineer at Tech Company',
-        location: 'San Francisco, CA',
-        summary: 'Passionate software engineer with 5+ years of experience in full-stack development. Expertise in React, Node.js, and cloud technologies.',
-        experience: [
-          {
-            title: 'Senior Software Engineer',
-            company: 'Tech Company',
-            duration: 'Jan 2022 - Present',
-            description: 'Lead development of scalable web applications using React and Node.js. Mentored junior developers and improved system performance by 40%.'
-          },
-          {
-            title: 'Software Engineer',
-            company: 'Startup Inc',
-            duration: 'Jun 2019 - Dec 2021',
-            description: 'Developed full-stack applications and RESTful APIs. Collaborated with cross-functional teams to deliver high-quality software solutions.'
-          }
-        ],
-        education: [
-          {
-            school: 'University of Technology',
-            degree: 'Bachelor of Science',
-            field: 'Computer Science',
-            years: '2015 - 2019'
-          }
-        ],
-        skills: ['JavaScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'MongoDB', 'PostgreSQL'],
-        connections: 500,
+      // Store transaction details for summary display
+      setTransactionDetails({
+        amount: data.creditsUsed,
+        serviceType: 'linkedin',
+        timestamp: new Date().toISOString()
+      });
+      setShowTransactionSummary(true);
+      
+      console.log('LinkedIn URL Analysis Successful:', {
+        requestId: currentRequestId,
+        serviceType: 'linkedin',
+        creditsDeducted: data.creditsUsed,
+        remainingCredits: data.remainingCredits,
         profileUrl: url,
-        imageUrl: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face`
-      };
-
-      setProfile(mockProfile);
-      
-      const processingTime = Date.now() - startTime;
-      
-      // Now deduct credits and log the successful response
-      const deductionResponse = await fetch('/api/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'check_and_deduct',
-          serviceType: 'linkedin',
-          payload: { profileUrl: url }
-        })
+        score: data.data.score,
+        timestamp: new Date().toISOString()
       });
-
-      const deductionData = await deductionResponse.json();
-      
-      if (!deductionResponse.ok) {
-        // Service succeeded but credit deduction failed - log this unusual case
-        console.error('Service succeeded but credit deduction failed:', deductionData.error);
-        // Still show success to user since the service worked
-      } else {
-        const currentRequestId = deductionData.requestId;
-        setRequestId(currentRequestId);
-        setCredits(deductionData.remainingCredits);
-        setShowCreditWarning(deductionData.isLowCredits);
-        
-        // Store transaction details for summary display
-        setTransactionDetails(deductionData.transaction);
-        setShowTransactionSummary(true);
-        
-        // Enhanced logging for successful credit deduction
-        console.log('Credit Deduction Successful:', {
-          requestId: currentRequestId,
-          serviceType: 'linkedin',
-          creditsDeducted: deductionData.creditsDeducted,
-          remainingCredits: deductionData.remainingCredits,
-          profileUrl: url,
-          timestamp: new Date().toISOString()
-        });
-
-        // Log successful response
-        await fetch('/api/requests', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requestId: currentRequestId,
-            status: 'completed',
-            responseData: {
-              profile: mockProfile,
-              profileUrl: url
-            },
-            analysisResults: {
-              score: calculateLinkedInScore(),
-              strengths: getProfileStrengths(mockProfile),
-              weaknesses: getProfileWeaknesses(mockProfile),
-              suggestions: getProfileSuggestions(mockProfile)
-            },
-            processingTime
-          })
-        });
-      }
 
       setShowSuccessNotification(true);
       setTimeout(() => setShowSuccessNotification(false), 5000);
@@ -246,10 +163,85 @@ export default function LinkedInPage() {
       setError(errorMessage);
       setProfile(null);
       
-      // No need to log failed response since credits weren't deducted
       console.error('LinkedIn service error:', errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExtractProfile = async () => {
+    if (!username.trim()) {
+      setError('Please enter a LinkedIn username');
+      return;
+    }
+
+    setIsExtracting(true);
+    setError('');
+    setProfile(null);
+
+    try {
+      // Use the new dedicated LinkedIn extraction API endpoint
+      const response = await fetch('/api/linkedin/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim()
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        if (data.error?.includes('Insufficient credits')) {
+          setShowInsufficientCreditsModal(true);
+          setShowCreditWarning(true);
+        }
+        throw new Error(data.error || 'Failed to extract LinkedIn profile');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'LinkedIn extraction failed');
+      }
+
+      // Set the extracted profile data
+      setProfile(data.data.profile);
+      
+      // Update credits and request tracking
+      const currentRequestId = data.requestId;
+      setRequestId(currentRequestId);
+      setCredits(data.remainingCredits);
+      setShowCreditWarning(data.remainingCredits < 20);
+      
+      // Store transaction details for summary display
+      setTransactionDetails({
+        amount: data.creditsUsed,
+        serviceType: 'linkedin',
+        timestamp: new Date().toISOString()
+      });
+      setShowTransactionSummary(true);
+      
+      // Enhanced logging for successful extraction
+      console.log('LinkedIn Profile Extraction Successful:', {
+        requestId: currentRequestId,
+        serviceType: 'linkedin',
+        creditsDeducted: data.creditsUsed,
+        remainingCredits: data.remainingCredits,
+        username: username.trim(),
+        score: data.data.score,
+        timestamp: new Date().toISOString()
+      });
+
+      setShowSuccessNotification(true);
+      setTimeout(() => setShowSuccessNotification(false), 5000);
+
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to extract LinkedIn profile';
+      setError(errorMessage);
+      setProfile(null);
+      
+      console.error('LinkedIn extraction error:', errorMessage);
+    } finally {
+      setIsExtracting(false);
     }
   };
 
@@ -280,106 +272,55 @@ export default function LinkedInPage() {
     setError('');
 
     try {
-      // Check credits before processing
-      const creditCheckResponse = await fetch('/api/credits', {
+      // Use manual entry API endpoint
+      const response = await fetch('/api/linkedin/manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'check',
-          serviceType: 'linkedin'
+          manualData
         })
       });
 
-      const creditCheckData = await creditCheckResponse.json();
+      const data = await response.json();
       
-      if (!creditCheckResponse.ok) {
-        throw new Error(creditCheckData.error || 'Failed to check credits');
+      if (!response.ok) {
+        if (data.error?.includes('Insufficient credits')) {
+          setShowInsufficientCreditsModal(true);
+          setShowCreditWarning(true);
+        }
+        throw new Error(data.error || 'Failed to process LinkedIn profile');
       }
 
-      const requiredCredits = creditCheckData.costs.linkedin;
-      if (creditCheckData.credits < requiredCredits) {
-        setError(`Insufficient credits. You have ${creditCheckData.credits} credits but need ${requiredCredits}.`);
-        setShowInsufficientCreditsModal(true);
-        setShowCreditWarning(true);
-        return;
+      if (!data.success) {
+        throw new Error(data.error || 'Manual entry processing failed');
       }
 
-      const startTime = Date.now();
-
-      const manualProfile: LinkedInProfile = {
+      // Set the profile data
+      setProfile(data.data.profile);
+      
+      // Update credits and request tracking
+      const currentRequestId = data.requestId;
+      setRequestId(currentRequestId);
+      setCredits(data.remainingCredits);
+      setShowCreditWarning(data.remainingCredits < 20);
+      
+      // Store transaction details for summary display
+      setTransactionDetails({
+        amount: data.creditsUsed,
+        serviceType: 'linkedin',
+        timestamp: new Date().toISOString()
+      });
+      setShowTransactionSummary(true);
+      
+      console.log('LinkedIn Manual Entry Successful:', {
+        requestId: currentRequestId,
+        serviceType: 'linkedin',
+        creditsDeducted: data.creditsUsed,
+        remainingCredits: data.remainingCredits,
         name: manualData.name,
-        headline: manualData.headline,
-        location: manualData.location,
-        summary: manualData.summary,
-        experience: manualData.experience.filter(exp => exp.title && exp.company),
-        education: manualData.education.filter(edu => edu.school && edu.degree),
-        skills: manualData.skills.split(',').map(skill => skill.trim()).filter(skill => skill),
-        connections: manualData.connections,
-        profileUrl: 'manual-entry'
-      };
-
-      setProfile(manualProfile);
-      
-      const processingTime = Date.now() - startTime;
-      
-      // Now deduct credits and log the successful response
-      const deductionResponse = await fetch('/api/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'check_and_deduct',
-          serviceType: 'linkedin',
-          payload: { type: 'manual-entry', name: manualData.name }
-        })
+        score: data.data.score,
+        timestamp: new Date().toISOString()
       });
-
-      const deductionData = await deductionResponse.json();
-      
-      if (!deductionResponse.ok) {
-        // Service succeeded but credit deduction failed - log this unusual case
-        console.error('Service succeeded but credit deduction failed:', deductionData.error);
-        // Still show success to user since the service worked
-      } else {
-        const currentRequestId = deductionData.requestId;
-        setRequestId(currentRequestId);
-        setCredits(deductionData.remainingCredits);
-        setShowCreditWarning(deductionData.isLowCredits);
-        
-        // Store transaction details for summary display
-        setTransactionDetails(deductionData.transaction);
-        setShowTransactionSummary(true);
-        
-        // Enhanced logging for successful credit deduction
-        console.log('Credit Deduction Successful:', {
-          requestId: currentRequestId,
-          serviceType: 'linkedin',
-          creditsDeducted: deductionData.creditsDeducted,
-          remainingCredits: deductionData.remainingCredits,
-          type: 'manual-entry',
-          timestamp: new Date().toISOString()
-        });
-
-        // Log successful response
-        await fetch('/api/requests', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requestId: currentRequestId,
-            status: 'completed',
-            responseData: {
-              profile: manualProfile,
-              type: 'manual-entry'
-            },
-            analysisResults: {
-              score: calculateLinkedInScore(),
-              strengths: getProfileStrengths(manualProfile),
-              weaknesses: getProfileWeaknesses(manualProfile),
-              suggestions: getProfileSuggestions(manualProfile)
-            },
-            processingTime
-          })
-        });
-      }
 
       setShowSuccessNotification(true);
       setTimeout(() => setShowSuccessNotification(false), 5000);
@@ -546,6 +487,17 @@ export default function LinkedInPage() {
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="flex space-x-4 mb-6">
               <button
+                onClick={() => setAnalysisMethod('extract')}
+                className={cn(
+                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  analysisMethod === 'extract'
+                    ? 'bg-linkedin text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                )}
+              >
+                Extract Profile
+              </button>
+              <button
                 onClick={() => setAnalysisMethod('url')}
                 className={cn(
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors',
@@ -569,7 +521,44 @@ export default function LinkedInPage() {
               </button>
             </div>
 
-            {analysisMethod === 'url' ? (
+            {analysisMethod === 'extract' ? (
+              <form onSubmit={(e) => { e.preventDefault(); handleExtractProfile(); }}>
+                <div className="mb-4">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                    LinkedIn Username
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Linkedin className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
+                      placeholder="thedevankit"
+                      required
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Enter the LinkedIn username (without the full URL). For example: 'thedevankit' from linkedin.com/in/thedevankit
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isExtracting}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  {isExtracting ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                  <span>{isExtracting ? 'Extracting...' : 'Extract Data'}</span>
+                </button>
+              </form>
+            ) : analysisMethod === 'url' ? (
               <form onSubmit={handleUrlSubmit}>
                 <div className="mb-4">
                   <label htmlFor="profileUrl" className="block text-sm font-medium text-gray-700 mb-2">
@@ -909,81 +898,127 @@ export default function LinkedInPage() {
               {/* Profile Overview */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {/* Profile Card */}
-                <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-                  <div className="flex items-start space-x-6">
-                    {profile.imageUrl && (
-                      <img
-                        src={profile.imageUrl}
-                        alt={profile.name}
-                        className="w-24 h-24 rounded-full"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h2 className="text-2xl font-bold text-gray-900">{profile.name}</h2>
-                        {profile.profileUrl !== 'manual-entry' && (
-                          <a
-                            href={profile.profileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-linkedin hover:text-linkedin/80 transition-colors"
-                          >
-                            <ExternalLink className="h-5 w-5" />
-                          </a>
-                        )}
-                      </div>
-                      {profile.headline && (
-                        <p className="text-gray-600 text-lg mb-3">{profile.headline}</p>
-                      )}
-                      {profile.location && (
-                        <div className="flex items-center text-sm text-gray-600 mb-4">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {profile.location}
+                {/* LinkedIn-style Profile Card */}
+                <div className="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
+                  {/* Cover Section */}
+                  <div className="h-32 bg-gradient-to-r from-primary to-primary/80"></div>
+                  
+                  {/* Profile Content */}
+                  <div className="relative px-6 pb-6">
+                    {/* Profile Picture */}
+                    <div className="flex items-start space-x-6 -mt-16">
+                      {profile.imageUrl ? (
+                        <img
+                          src={profile.imageUrl}
+                          alt={profile.name}
+                          className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-100 flex items-center justify-center">
+                          <User className="h-16 w-16 text-gray-400" />
                         </div>
                       )}
-                      {profile.summary && (
-                        <p className="text-gray-700">{profile.summary}</p>
-                      )}
+                      
+                      {/* Profile Info */}
+                      <div className="flex-1 pt-20">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
+                            {profile.headline && (
+                              <p className="text-lg text-gray-700 mb-2">{profile.headline}</p>
+                            )}
+                            {profile.location && (
+                              <div className="flex items-center text-gray-600 mb-3">
+                                <MapPin className="h-4 w-4 mr-2" />
+                                <span>{profile.location}</span>
+                              </div>
+                            )}
+                            {profile.connections > 0 && (
+                              <div className="flex items-center text-gray-600 text-sm">
+                                <Users className="h-4 w-4 mr-2" />
+                                <span>{profile.connections.toLocaleString()} connections</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Actions */}
+                          <div className="flex items-center space-x-3">
+                            {profile.profileUrl !== 'manual-entry' && (
+                              <a
+                                href={profile.profileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                <span>View LinkedIn</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* About Section */}
+                        {profile.summary && (
+                          <div className="mt-4">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">About</h3>
+                            <p className="text-gray-700 leading-relaxed">{profile.summary}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Profile Score */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white rounded-lg shadow-lg p-6">
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-4">
-                      <Trophy className="h-8 w-8 text-yellow-500" />
+                      <div className="p-3 bg-primary/10 rounded-full">
+                        <Trophy className="h-8 w-8 text-primary" />
+                      </div>
                     </div>
                     <div className={cn(
                       "text-4xl font-bold mb-2",
                       profileScore >= 80 ? "text-green-600" :
-                      profileScore >= 60 ? "text-blue-600" :
+                      profileScore >= 60 ? "text-primary" :
                       profileScore >= 40 ? "text-yellow-600" : "text-red-600"
                     )}>
                       {profileScore}
                     </div>
-                    <p className="text-gray-600 text-sm">LinkedIn Score</p>
+                    <p className="text-gray-600 text-sm font-medium">Profile Score</p>
                   </div>
                   
-                  <div className="mt-6 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Profile Complete</span>
-                      <span className="text-sm font-medium">
+                  {/* Score Breakdown */}
+                  <div className="mt-6 space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                        Profile Complete
+                      </span>
+                      <span className="text-sm font-medium text-primary">
                         {[profile.name, profile.headline, profile.location, profile.summary].filter(Boolean).length}/4
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Experience</span>
-                      <span className="text-sm font-medium">{profile.experience.length}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Briefcase className="h-4 w-4 mr-2 text-blue-500" />
+                        Experience
+                      </span>
+                      <span className="text-sm font-medium text-primary">{profile.experience.length}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Skills</span>
-                      <span className="text-sm font-medium">{profile.skills.length}</span>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Award className="h-4 w-4 mr-2 text-purple-500" />
+                        Skills
+                      </span>
+                      <span className="text-sm font-medium text-primary">{profile.skills.length}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Connections</span>
-                      <span className="text-sm font-medium">{profile.connections}</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Users className="h-4 w-4 mr-2 text-orange-500" />
+                        Network
+                      </span>
+                      <span className="text-sm font-medium text-primary">{profile.connections.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -991,21 +1026,29 @@ export default function LinkedInPage() {
 
               {/* Experience */}
               {profile.experience.length > 0 && (
-                <div className="bg-white rounded-lg shadow">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Experience</h3>
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                      <Briefcase className="h-6 w-6 mr-3 text-primary" />
+                      Experience
+                    </h3>
                   </div>
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-gray-100">
                     {profile.experience.map((exp, index) => (
-                      <div key={index} className="p-6">
+                      <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start space-x-4">
-                          <Briefcase className="h-6 w-6 text-gray-400 mt-1" />
+                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Building className="h-6 w-6 text-primary" />
+                          </div>
                           <div className="flex-1">
-                            <h4 className="text-lg font-medium text-gray-900">{exp.title}</h4>
-                            <p className="text-gray-600">{exp.company}</p>
-                            <p className="text-sm text-gray-500 mb-2">{exp.duration}</p>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-1">{exp.title}</h4>
+                            <p className="text-primary font-medium mb-1">{exp.company}</p>
+                            <div className="flex items-center text-sm text-gray-600 mb-3">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              <span>{exp.duration}</span>
+                            </div>
                             {exp.description && (
-                              <p className="text-gray-700">{exp.description}</p>
+                              <p className="text-gray-700 leading-relaxed">{exp.description}</p>
                             )}
                           </div>
                         </div>
@@ -1017,19 +1060,29 @@ export default function LinkedInPage() {
 
               {/* Education */}
               {profile.education.length > 0 && (
-                <div className="bg-white rounded-lg shadow">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Education</h3>
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                      <GraduationCap className="h-6 w-6 mr-3 text-primary" />
+                      Education
+                    </h3>
                   </div>
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-gray-100">
                     {profile.education.map((edu, index) => (
-                      <div key={index} className="p-6">
+                      <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start space-x-4">
-                          <GraduationCap className="h-6 w-6 text-gray-400 mt-1" />
+                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <GraduationCap className="h-6 w-6 text-primary" />
+                          </div>
                           <div className="flex-1">
-                            <h4 className="text-lg font-medium text-gray-900">{edu.school}</h4>
-                            <p className="text-gray-600">{edu.degree} {edu.field && `in ${edu.field}`}</p>
-                            <p className="text-sm text-gray-500">{edu.years}</p>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-1">{edu.school}</h4>
+                            <p className="text-primary font-medium mb-1">
+                              {edu.degree} {edu.field && `in ${edu.field}`}
+                            </p>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              <span>{edu.years}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1040,17 +1093,28 @@ export default function LinkedInPage() {
 
               {/* Skills */}
               {profile.skills.length > 0 && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                      <Award className="h-6 w-6 mr-3 text-primary" />
+                      Skills & Endorsements
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {profile.skills.map((skill, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/30 transition-colors"
+                        >
+                          <span className="font-medium text-gray-900">{skill}</span>
+                          <div className="flex items-center space-x-1 text-sm text-gray-600">
+                            <Users className="h-4 w-4" />
+                            <span>{Math.floor(Math.random() * 50) + 1}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

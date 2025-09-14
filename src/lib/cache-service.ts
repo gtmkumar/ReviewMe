@@ -1,3 +1,15 @@
+/**
+ * Cache entry interface
+ */
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  ttl: number;
+  accessCount: number;
+  lastAccessed: number;
+  tags: string[];
+}
+
 // Advanced Caching Service for ReviewMe
 export class CacheService {
   private static memoryCache = new Map<string, CacheEntry>();
@@ -11,18 +23,6 @@ export class CacheService {
     analytics: { ttl: 15 * 60 * 1000, maxSize: 100 }, // 15 minutes
     onboarding: { ttl: 24 * 60 * 60 * 1000, maxSize: 1000 }, // 24 hours
   };
-
-  /**
-   * Cache entry interface
-   */
-  interface CacheEntry {
-    data: any;
-    timestamp: number;
-    ttl: number;
-    accessCount: number;
-    lastAccessed: number;
-    tags: string[];
-  }
 
   /**
    * Get cached data with automatic cleanup
@@ -328,10 +328,10 @@ export class PersonalizationEngine {
     const { userType, careerGoals, socialProfiles, preferences } = onboardingData;
     
     const recommendations = {
-      priorityActions: [],
-      skillDevelopment: [],
-      contentSuggestions: [],
-      networkingOpportunities: [],
+      priorityActions: [] as string[],
+      skillDevelopment: [] as string[],
+      contentSuggestions: [] as string[],
+      networkingOpportunities: [] as string[],
     };
 
     // Generate recommendations based on user type
@@ -379,8 +379,8 @@ export class PersonalizationEngine {
   private static async generateDashboardLayout(preferences: any): Promise<any> {
     const layout = {
       layout: preferences.dashboardLayout || 'detailed',
-      widgets: [],
-      priorities: [],
+      widgets: [] as string[],
+      priorities: [] as string[],
     };
 
     // Customize based on communication style

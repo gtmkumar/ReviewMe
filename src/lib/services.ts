@@ -675,7 +675,11 @@ export class DataCacheService {
       this.getCachedServiceData(userId, 'resume')
     ]);
 
-    return { github, linkedin, resume };
+    return { 
+      github: github || undefined, 
+      linkedin: linkedin || undefined, 
+      resume: resume || undefined 
+    };
   }
 
   static async isDataFresh(userId: string, serviceType: ServiceType, maxAgeHours: number = 24): Promise<boolean> {

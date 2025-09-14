@@ -4,7 +4,7 @@ import { DataCacheService } from '@/lib/services';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { publicUsername: string } }
+  { params }: { params: Promise<{ publicUsername: string }> }
 ) {
   try {
     const { publicUsername } = await params;

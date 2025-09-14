@@ -95,7 +95,7 @@ export class BlogService {
     
     try {
       // Simple regex-based parsing for Medium RSS
-      const itemRegex = /<item>(.*?)<\/item>/gs;
+      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
       const items = xmlText.match(itemRegex) || [];
       
       items.slice(0, 20).forEach((item, index) => {
