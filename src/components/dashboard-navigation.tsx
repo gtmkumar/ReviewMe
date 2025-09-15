@@ -7,7 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { 
   BarChart3, Github, Linkedin, FileText, Settings, LogOut, 
-  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare
+  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare, History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -175,6 +175,18 @@ export function DashboardNavigation() {
                   <span>Edit Profile</span>
                 </Link>
                 
+                <Link
+                  href="/dashboard/transactions"
+                  onClick={() => {
+                    handleProfileMenuClick('transactions', '/dashboard/transactions');
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <History className="h-4 w-4" />
+                  <span>Transaction History</span>
+                </Link>
+                
                 {/* Public Profile Link */}
                 {session?.user && (
                   <a
@@ -291,6 +303,18 @@ export function DashboardNavigation() {
                 >
                   <Settings className="h-5 w-5" />
                   <span>Edit Profile</span>
+                </Link>
+                
+                <Link
+                  href="/dashboard/transactions"
+                  onClick={() => {
+                    handleProfileMenuClick('transactions', '/dashboard/transactions');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <History className="h-5 w-5" />
+                  <span>Transaction History</span>
                 </Link>
                 
                 {session?.user && (

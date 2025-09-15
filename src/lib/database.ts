@@ -552,21 +552,28 @@ export class DatabaseManager {
 
   async connect(): Promise<void> {
     // If already connected, return immediately
-    if (this.isConnected) return;
+    if (this.isConnected) {
+      console.log('Already connected to MongoDB'); // Debug log
+      return;
+    }
     
     // If connection is in progress, return the existing promise
     if (this.connectionPromise) {
+      console.log('Connection already in progress'); // Debug log
       return this.connectionPromise;
     }
 
     // Create a new connection promise
     this.connectionPromise = new Promise<void>(async (resolve, reject) => {
       try {
+        console.log('Connecting to MongoDB...'); // Debug log
         await this._client.connect();
+        console.log('MongoDB client connected'); // Debug log
         this.db = this._client.db();
+        console.log('Database name:', this.db.databaseName); // Debug log
         this.isConnected = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
-        console.log('Connected to MongoDB');
+        console.log('Connected to MongoDB successfully'); // Debug log
         
         // Set up connection monitoring
         this._client.on('close', this.handleDisconnect.bind(this));
@@ -863,7 +870,10 @@ export class DatabaseManager {
   
   async getCreditTransactionsCollection(): Promise<Collection<any>> {
     const db = await this.getDb();
-    return db.collection('credit_transactions');
+    const collectionName = 'credit_transactions';
+    console.log(`Accessing collection: ${collectionName}`); // Debug log
+    const collection = db.collection(collectionName);
+    return collection;
   }
   
   async getBlogsCollection(): Promise<Collection<BlogDocument>> {

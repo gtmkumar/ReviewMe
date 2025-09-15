@@ -9,7 +9,9 @@ import {
   Search, RefreshCw, CheckCircle, AlertCircle, ExternalLink,
   Code, Trophy, TrendingUp, MapPin, Link as LinkIcon, 
   CreditCard, Zap, AlertTriangle, History, BarChart3, PieChart,
-  Database, Clock
+  Database, Clock,
+  CheckSquare,
+  Info
 } from 'lucide-react';
 import { DashboardNavigation } from '@/components/dashboard-navigation';
 import { cn } from '@/lib/utils';
@@ -747,6 +749,82 @@ export default function GitHubPage() {
                 </div>
               </div>
 
+               {/* Profile Analysis Results */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Strengths */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                    Strengths
+                  </h3>
+                  {/* <ul className="space-y-2">
+                    {getProfileStrengths().map((strength, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mr-3 flex-shrink-0" />
+                        {strength}
+                      </li>
+                    ))}
+                  </ul> */}
+                  <div className="space-y-2">
+                   {getProfileStrengths().map((strength, index) => (
+                      <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 rounded-lg">
+                        <CheckSquare className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-green-800">{strength}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Areas for Improvement */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                    Areas for Improvement
+                  </h3>
+                  <div className="space-y-2">
+                   {getProfileWeaknesses().map((weakness, index) => (
+                      <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 rounded-lg">
+                        <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-yellow-800">{weakness}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* <ul className="space-y-2">
+                    {getProfileWeaknesses().map((weakness, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-yellow-600 rounded-full mr-3 flex-shrink-0" />
+                        {weakness}
+                      </li>
+                    ))}
+                  </ul> */}
+                </div>
+              </div>
+
+              {/* Suggestions */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
+                  Suggestions for Growth
+                </h3>
+                {/* <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {getProfileSuggestions().map((suggestion, index) => (
+                    <li key={index} className="flex items-start text-sm text-gray-700">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mr-3 mt-2 flex-shrink-0" />
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul> */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {getProfileSuggestions().map((suggestion, index) => (
+                      <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                        <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-blue-800">{suggestion}</span>
+                      </div>
+                    ))}
+                  </div>
+              </div>
+
               {/* Analytics Charts */}
               {languageCharts && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -876,56 +954,6 @@ export default function GitHubPage() {
                 </div>
               )}
 
-              {/* Profile Analysis Results */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Strengths */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    Strengths
-                  </h3>
-                  <ul className="space-y-2">
-                    {getProfileStrengths().map((strength, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 bg-green-600 rounded-full mr-3 flex-shrink-0" />
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Areas for Improvement */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
-                    Areas for Improvement
-                  </h3>
-                  <ul className="space-y-2">
-                    {getProfileWeaknesses().map((weakness, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 bg-yellow-600 rounded-full mr-3 flex-shrink-0" />
-                        {weakness}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Suggestions */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
-                  Suggestions for Growth
-                </h3>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {getProfileSuggestions().map((suggestion, index) => (
-                    <li key={index} className="flex items-start text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mr-3 mt-2 flex-shrink-0" />
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           )}
 

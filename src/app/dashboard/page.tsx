@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart3, Github, Linkedin, FileText, Settings, LogOut, 
@@ -118,10 +118,6 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [credits, setCredits] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showTransactions, setShowTransactions] = useState(false);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [transactionSummary, setTransactionSummary] = useState<any[]>([]);
-  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   
   // Initialize analytics tracking
@@ -157,52 +153,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error loading credits:', error);
     }
-  };
-
-  const loadTransactions = async () => {
-    setIsLoadingTransactions(true);
-    try {
-      const response = await fetch('/api/credits/history?limit=20');
-      const data = await response.json();
-      if (response.ok) {
-        setTransactions(data.transactions || []);
-        setTransactionSummary(data.summary || []);
-      }
-    } catch (error) {
-      console.error('Error loading transactions:', error);
-    } finally {
-      setIsLoadingTransactions(false);
-    }
-  };
-
-  const handleTransactionsToggle = () => {
-    if (!showTransactions) {
-      loadTransactions();
-    }
-    setShowTransactions(!showTransactions);
-  };
-
-  const getServiceIcon = (serviceType: string) => {
-    switch (serviceType.toLowerCase()) {
-      case 'github':
-        return <Github className="h-5 w-5 text-gray-700" />;
-      case 'linkedin':
-        return <Linkedin className="h-5 w-5 text-blue-600" />;
-      case 'resume':
-        return <FileText className="h-5 w-5 text-green-600" />;
-      default:
-        return <Star className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   // Fetch dashboard data
@@ -304,7 +254,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               
-              {/* Credit Display and Transactions */}
+              {/* Credit Display and Navigation */}
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => {
@@ -317,19 +267,16 @@ export default function DashboardPage() {
                   <CreditCard className="h-4 w-4 text-blue-600" />
                   <span className="text-blue-700 font-medium">Credits: </span>
                   <span className="text-blue-900 font-bold">{credits}</span>
-                  {/* <span className="text-xs text-blue-600 ml-1">(Click to earn more)</span>   */}
                 </button>
-                <button 
-                  onClick={handleTransactionsToggle}
-                  className={cn(
-                    "px-4 py-2 rounded-lg transition-colors flex items-center space-x-2",
-                    showTransactions ? "bg-green-600 text-white" : "bg-green-100 text-green-700 hover:bg-green-200"
-                  )}
+                
+                {/* <Link 
+                  href="/dashboard/transactions"
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors"
                 >
                   <History className="h-4 w-4" />
-                  <span>Transactions</span>
-                  {showTransactions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
+                  <span>View Transactions</span>
+                </Link> */}
+                
                 <button 
                   onClick={() => {
                     trackClick('analytics_toggle', '/dashboard');
@@ -346,133 +293,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Transaction Details View */}
-          {showTransactions && (
-            <div className="mb-8 bg-white rounded-lg shadow-lg border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <History className="h-6 w-6 text-green-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
-                  </div>
-                  <button 
-                    onClick={() => setShowTransactions(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-              
-              {/* Transaction Summary Cards */}
-              {transactionSummary.length > 0 && (
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Usage Summary by Service</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {transactionSummary.map((summary) => (
-                      <div key={summary.serviceType} className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            {getServiceIcon(summary.serviceType)}
-                            <span className="text-sm font-medium text-gray-700 capitalize">
-                              {summary.serviceType}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            {summary.usageCount} uses
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Minus className="h-4 w-4 text-red-500" />
-                          <span className="text-lg font-bold text-red-600">
-                            {summary.totalCreditsUsed}
-                          </span>
-                          <span className="text-sm text-gray-500">credits used</span>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          Last used: {formatDate(summary.lastUsed)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Transaction List */}
-              <div className="px-6 py-4">
-                {isLoadingTransactions ? (
-                  <div className="flex items-center justify-center py-8">
-                    <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
-                    <span className="ml-2 text-gray-500">Loading transactions...</span>
-                  </div>
-                ) : transactions.length > 0 ? (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Transactions</h4>
-                    {transactions.map((transaction) => (
-                      <div key={transaction.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0">
-                              {getServiceIcon(transaction.serviceType)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm font-medium text-gray-900 capitalize">
-                                  {transaction.serviceType}
-                                </span>
-                                <span className={cn(
-                                  "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                                  transaction.status === 'completed' ? "bg-green-100 text-green-800" :
-                                  transaction.status === 'failed' ? "bg-red-100 text-red-800" :
-                                  "bg-yellow-100 text-yellow-800"
-                                )}>
-                                  {transaction.status}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 truncate">
-                                {transaction.description}
-                              </p>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <Clock className="h-3 w-3 text-gray-400" />
-                                <span className="text-xs text-gray-500">
-                                  {formatDate(transaction.timestamp)}
-                                </span>
-                                {transaction.requestId && (
-                                  <span className="text-xs text-gray-400">
-                                    • ID: {transaction.requestId.slice(-8)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="text-right">
-                              <div className="flex items-center space-x-1 text-red-600">
-                                <Minus className="h-4 w-4" />
-                                <span className="text-sm font-bold">
-                                  {transaction.creditsDeducted}
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-500">credits</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <History className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">No transactions found</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Start using our services to see your transaction history here
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
