@@ -401,6 +401,230 @@ export interface BlogDocument {
   updatedAt: Date;
 }
 
+// Mentor-related Document Interfaces
+export interface MentorDocument {
+  _id?: ObjectId | string;
+  userId: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  bio: string;
+  role: string;
+  company?: string;
+  yearsOfExperience: number;
+  expertise: {
+    area: 'resume' | 'linkedin' | 'github' | 'career' | 'technical' | 'interview';
+    level: 'beginner' | 'intermediate' | 'expert';
+    tags: string[];
+  }[];
+  sessionTypes: {
+    type: 'resume_review' | 'linkedin_review' | 'github_review' | 'career_discussion' | 'project_review' | 'interview_prep';
+    name: string;
+    description: string;
+    duration: number;
+    price: number;
+    isActive: boolean;
+  }[];
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  isActive: boolean;
+  rating: {
+    average: number;
+    count: number;
+  };
+  totalSessions: number;
+  joinedAt: Date;
+  lastActiveAt: Date;
+  availability: {
+    timezone: string;
+    weeklySlots: {
+      day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+      slots: {
+        startTime: string;
+        endTime: string;
+        isAvailable: boolean;
+      }[];
+    }[];
+  };
+  verificationDocuments?: {
+    type: 'education' | 'experience' | 'work_email';
+    fileName: string;
+    verified: boolean;
+    verifiedAt?: Date;
+  }[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  preferences: {
+    communicationStyle: 'formal' | 'casual' | 'technical';
+    sessionPreferences: string[];
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionDocument {
+  _id?: ObjectId | string;
+  mentorId: string;
+  menteeId: string;
+  sessionType: 'resume_review' | 'linkedin_review' | 'github_review' | 'career_discussion' | 'project_review' | 'interview_prep';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  scheduledAt: Date;
+  duration: number;
+  tokensCharged: number;
+  meetingLink?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  cancelledAt?: Date;
+  cancelledBy?: 'mentor' | 'mentee' | 'admin';
+  cancellationReason?: string;
+}
+
+export interface SessionBookingDocument {
+  _id?: ObjectId | string;
+  mentorId: string;
+  menteeId: string;
+  sessionType: 'resume_review' | 'linkedin_review' | 'github_review' | 'career_discussion' | 'project_review' | 'interview_prep';
+  requestedSlot: {
+    date: string;
+    startTime: string;
+    endTime: string;
+  };
+  tokensReserved: number;
+  status: 'pending' | 'confirmed' | 'rejected' | 'expired';
+  message?: string;
+  mentorResponse?: {
+    accepted: boolean;
+    meetingLink?: string;
+    notes?: string;
+    respondedAt: Date;
+  };
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionFeedbackDocument {
+  _id?: ObjectId | string;
+  sessionId: string;
+  mentorId: string;
+  menteeId: string;
+  mentorFeedback: {
+    strengths: string;
+    improvements: string;
+    nextSteps: string;
+    additionalNotes?: string;
+    attachments?: {
+      fileName: string;
+      fileUrl: string;
+      type: 'document' | 'image';
+    }[];
+    submittedAt: Date;
+  };
+  menteeFeedback?: {
+    sessionQuality: number;
+    mentorKnowledge: number;
+    communication: number;
+    wouldRecommend: boolean;
+    comments?: string;
+    submittedAt: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionRatingDocument {
+  _id?: ObjectId | string;
+  sessionId: string;
+  mentorId: string;
+  menteeId: string;
+  mentorToMentee: {
+    communication: number;
+    technicalUnderstanding: number;
+    professionalism: number;
+    preparedness: number;
+    overall: number;
+    comments?: string;
+    submittedAt: Date;
+  };
+  menteeToMentor: {
+    knowledge: number;
+    communication: number;
+    helpfulness: number;
+    wouldRecommend: boolean;
+    overall: number;
+    comments?: string;
+    submittedAt: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MentorApplicationDocument {
+  _id?: ObjectId | string;
+  userId: string;
+  personalInfo: {
+    name: string;
+    email: string;
+    phone?: string;
+    location: string;
+    timezone: string;
+  };
+  professionalInfo: {
+    currentRole: string;
+    company: string;
+    yearsOfExperience: number;
+    industry: string;
+    bio: string;
+    expertise: {
+      area: 'resume' | 'linkedin' | 'github' | 'career' | 'technical' | 'interview';
+      level: 'beginner' | 'intermediate' | 'expert';
+      tags: string[];
+    }[];
+  };
+  sessionTypes: {
+    type: 'resume_review' | 'linkedin_review' | 'github_review' | 'career_discussion' | 'project_review' | 'interview_prep';
+    name: string;
+    description: string;
+    duration: number;
+    price: number;
+    isActive: boolean;
+  }[];
+  availability: {
+    timezone: string;
+    weeklySlots: {
+      day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+      slots: {
+        startTime: string;
+        endTime: string;
+        isAvailable: boolean;
+      }[];
+    }[];
+  };
+  verification: {
+    method: 'work_email' | 'documents';
+    workEmail?: string;
+    documents?: {
+      type: 'education' | 'experience';
+      fileName: string;
+      fileUrl: string;
+    }[];
+  };
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  reviewNotes?: string;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Contact and Support System
 export interface UserQueryDocument {
   _id?: string;
@@ -911,6 +1135,37 @@ export class DatabaseManager {
     return db.collection('securityAudit');
   }
 
+  // Mentor-related collection getters
+  async getMentorsCollection(): Promise<Collection<MentorDocument>> {
+    const db = await this.getDb();
+    return db.collection('mentors');
+  }
+
+  async getSessionsCollection(): Promise<Collection<SessionDocument>> {
+    const db = await this.getDb();
+    return db.collection('sessions');
+  }
+
+  async getSessionBookingsCollection(): Promise<Collection<SessionBookingDocument>> {
+    const db = await this.getDb();
+    return db.collection('sessionBookings');
+  }
+
+  async getSessionFeedbackCollection(): Promise<Collection<SessionFeedbackDocument>> {
+    const db = await this.getDb();
+    return db.collection('sessionFeedback');
+  }
+
+  async getSessionRatingsCollection(): Promise<Collection<SessionRatingDocument>> {
+    const db = await this.getDb();
+    return db.collection('sessionRatings');
+  }
+
+  async getMentorApplicationsCollection(): Promise<Collection<MentorApplicationDocument>> {
+    const db = await this.getDb();
+    return db.collection('mentorApplications');
+  }
+
   private async createIndexes(): Promise<void> {
     try {
       if (!this.db) {
@@ -1042,6 +1297,49 @@ export class DatabaseManager {
       await this.db.collection('securityAudit').createIndex({ timestamp: -1 });
       await this.db.collection('securityAudit').createIndex({ path: 1 });
       await this.db.collection('securityAudit').createIndex({ ipAddress: 1 });
+
+      // Mentor-related indexes
+      await this.db.collection('mentors').createIndex({ userId: 1 }, { unique: true });
+      await this.db.collection('mentors').createIndex({ status: 1 });
+      await this.db.collection('mentors').createIndex({ isActive: 1 });
+      await this.db.collection('mentors').createIndex({ 'expertise.area': 1 });
+      await this.db.collection('mentors').createIndex({ 'sessionTypes.type': 1 });
+      await this.db.collection('mentors').createIndex({ 'rating.average': -1 });
+      await this.db.collection('mentors').createIndex({ totalSessions: -1 });
+      await this.db.collection('mentors').createIndex({ joinedAt: -1 });
+      await this.db.collection('mentors').createIndex({ lastActiveAt: -1 });
+
+      await this.db.collection('sessions').createIndex({ mentorId: 1 });
+      await this.db.collection('sessions').createIndex({ menteeId: 1 });
+      await this.db.collection('sessions').createIndex({ status: 1 });
+      await this.db.collection('sessions').createIndex({ sessionType: 1 });
+      await this.db.collection('sessions').createIndex({ scheduledAt: 1 });
+      await this.db.collection('sessions').createIndex({ createdAt: -1 });
+      await this.db.collection('sessions').createIndex({ mentorId: 1, status: 1 });
+      await this.db.collection('sessions').createIndex({ menteeId: 1, status: 1 });
+
+      await this.db.collection('sessionBookings').createIndex({ mentorId: 1 });
+      await this.db.collection('sessionBookings').createIndex({ menteeId: 1 });
+      await this.db.collection('sessionBookings').createIndex({ status: 1 });
+      await this.db.collection('sessionBookings').createIndex({ expiresAt: 1 });
+      await this.db.collection('sessionBookings').createIndex({ createdAt: -1 });
+      await this.db.collection('sessionBookings').createIndex({ mentorId: 1, status: 1 });
+
+      await this.db.collection('sessionFeedback').createIndex({ sessionId: 1 }, { unique: true });
+      await this.db.collection('sessionFeedback').createIndex({ mentorId: 1 });
+      await this.db.collection('sessionFeedback').createIndex({ menteeId: 1 });
+      await this.db.collection('sessionFeedback').createIndex({ createdAt: -1 });
+
+      await this.db.collection('sessionRatings').createIndex({ sessionId: 1 }, { unique: true });
+      await this.db.collection('sessionRatings').createIndex({ mentorId: 1 });
+      await this.db.collection('sessionRatings').createIndex({ menteeId: 1 });
+      await this.db.collection('sessionRatings').createIndex({ createdAt: -1 });
+
+      await this.db.collection('mentorApplications').createIndex({ userId: 1 }, { unique: true });
+      await this.db.collection('mentorApplications').createIndex({ status: 1 });
+      await this.db.collection('mentorApplications').createIndex({ createdAt: -1 });
+      await this.db.collection('mentorApplications').createIndex({ reviewedBy: 1 });
+      await this.db.collection('mentorApplications').createIndex({ reviewedAt: -1 });
 
       console.log('Database indexes created successfully');
     } catch (error) {

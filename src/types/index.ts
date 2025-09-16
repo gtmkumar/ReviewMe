@@ -597,3 +597,286 @@ export interface FileUploadProps {
   isUploading?: boolean;
   className?: string;
 }
+
+// Mentor Types
+export interface Mentor {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  bio: string;
+  role: string; // e.g., "Senior Software Engineer", "Product Manager"
+  company?: string;
+  yearsOfExperience: number;
+  expertise: MentorExpertise[];
+  sessionTypes: SessionType[];
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  isActive: boolean;
+  rating: {
+    average: number;
+    count: number;
+  };
+  totalSessions: number;
+  joinedAt: Date;
+  lastActiveAt: Date;
+  availability: MentorAvailability;
+  verificationDocuments?: {
+    type: 'education' | 'experience' | 'work_email';
+    fileName: string;
+    verified: boolean;
+    verifiedAt?: Date;
+  }[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  preferences: {
+    communicationStyle: 'formal' | 'casual' | 'technical';
+    sessionPreferences: string[];
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MentorExpertise {
+  area: 'resume' | 'linkedin' | 'github' | 'career' | 'technical' | 'interview';
+  level: 'beginner' | 'intermediate' | 'expert';
+  tags: string[];
+}
+
+export interface SessionType {
+  type: 'resume_review' | 'linkedin_review' | 'github_review' | 'career_discussion' | 'project_review' | 'interview_prep';
+  name: string;
+  description: string;
+  duration: number; // in minutes
+  price: number; // in KTokens
+  isActive: boolean;
+}
+
+export interface MentorAvailability {
+  timezone: string;
+  weeklySlots: {
+    day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+    slots: {
+      startTime: string; // "09:00"
+      endTime: string; // "10:00"
+      isAvailable: boolean;
+    }[];
+  }[];
+}
+
+export interface Session {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  sessionType: SessionType['type'];
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  scheduledAt: Date;
+  duration: number; // in minutes
+  tokensCharged: number;
+  meetingLink?: string;
+  notes?: string;
+  feedback?: SessionFeedback;
+  rating?: SessionRating;
+  createdAt: Date;
+  updatedAt: Date;
+  cancelledAt?: Date;
+  cancelledBy?: 'mentor' | 'mentee' | 'admin';
+  cancellationReason?: string;
+}
+
+export interface SessionBooking {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  sessionType: SessionType['type'];
+  requestedSlot: {
+    date: string; // "2024-03-15"
+    startTime: string; // "14:00"
+    endTime: string; // "15:00"
+  };
+  tokensReserved: number;
+  status: 'pending' | 'confirmed' | 'rejected' | 'expired';
+  message?: string; // Optional message from mentee
+  mentorResponse?: {
+    accepted: boolean;
+    meetingLink?: string;
+    notes?: string;
+    respondedAt: Date;
+  };
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionFeedback {
+  id: string;
+  sessionId: string;
+  mentorId: string;
+  menteeId: string;
+  mentorFeedback: {
+    strengths: string;
+    improvements: string;
+    nextSteps: string;
+    additionalNotes?: string;
+    attachments?: {
+      fileName: string;
+      fileUrl: string;
+      type: 'document' | 'image';
+    }[];
+    submittedAt: Date;
+  };
+  menteeFeedback?: {
+    sessionQuality: number; // 1-5
+    mentorKnowledge: number; // 1-5
+    communication: number; // 1-5
+    wouldRecommend: boolean;
+    comments?: string;
+    submittedAt: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionRating {
+  // Mentor rates mentee
+  mentorToMentee: {
+    communication: number; // 1-5
+    technicalUnderstanding: number; // 1-5
+    professionalism: number; // 1-5
+    preparedness: number; // 1-5
+    overall: number; // 1-5
+    comments?: string;
+    submittedAt: Date;
+  };
+  // Mentee rates mentor
+  menteeToMentor: {
+    knowledge: number; // 1-5
+    communication: number; // 1-5
+    helpfulness: number; // 1-5
+    wouldRecommend: boolean;
+    overall: number; // 1-5
+    comments?: string;
+    submittedAt: Date;
+  };
+}
+
+export interface MentorApplication {
+  id: string;
+  userId: string;
+  personalInfo: {
+    name: string;
+    email: string;
+    phone?: string;
+    location: string;
+    timezone: string;
+  };
+  professionalInfo: {
+    currentRole: string;
+    company: string;
+    yearsOfExperience: number;
+    industry: string;
+    bio: string;
+    expertise: MentorExpertise[];
+  };
+  sessionTypes: SessionType[];
+  availability: MentorAvailability;
+  verification: {
+    method: 'work_email' | 'documents';
+    workEmail?: string;
+    documents?: {
+      type: 'education' | 'experience';
+      fileName: string;
+      fileUrl: string;
+    }[];
+  };
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  reviewNotes?: string;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// API Response Types for Mentors
+export interface MentorListResponse {
+  mentors: Mentor[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  filters: {
+    expertise: string[];
+    sessionTypes: string[];
+    priceRange: {
+      min: number;
+      max: number;
+    };
+  };
+}
+
+export interface SessionHistoryResponse {
+  sessions: Session[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  stats: {
+    total: number;
+    completed: number;
+    cancelled: number;
+    averageRating: number;
+  };
+}
+
+export interface FeedbackHistoryResponse {
+  feedback: SessionFeedback[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Store Types for Mentors
+export interface MentorStore {
+  mentors: Mentor[];
+  selectedMentor: Mentor | null;
+  isLoading: boolean;
+  filters: {
+    expertise: string[];
+    sessionTypes: string[];
+    priceRange: [number, number];
+  };
+  fetchMentors: (filters?: any) => Promise<void>;
+  fetchMentorById: (id: string) => Promise<void>;
+  bookSession: (booking: Omit<SessionBooking, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateFilters: (filters: Partial<MentorStore['filters']>) => void;
+}
+
+export interface SessionStore {
+  sessions: Session[];
+  bookings: SessionBooking[];
+  isLoading: boolean;
+  fetchSessions: () => Promise<void>;
+  fetchBookings: () => Promise<void>;
+  confirmBooking: (bookingId: string, meetingLink: string, notes?: string) => Promise<void>;
+  rejectBooking: (bookingId: string, reason: string) => Promise<void>;
+  cancelSession: (sessionId: string, reason: string) => Promise<void>;
+  submitFeedback: (sessionId: string, feedback: any) => Promise<void>;
+  submitRating: (sessionId: string, rating: any) => Promise<void>;
+}

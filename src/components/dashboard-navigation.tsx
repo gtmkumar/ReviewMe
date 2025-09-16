@@ -7,7 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { 
   BarChart3, Github, Linkedin, FileText, Settings, LogOut, 
-  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare, History
+  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare, History, Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -42,6 +42,12 @@ const navigationItems = [
     href: '/dashboard/blogs',
     icon: Globe,
     description: 'Blog analytics and content tracking'
+  },
+  {
+    name: 'Mentors',
+    href: '/dashboard/mentors',
+    icon: Users,
+    description: 'Find mentors and book sessions'
   }
 ];
 
@@ -204,6 +210,19 @@ export function DashboardNavigation() {
                   </a>
                 )}
                 
+                {/* Become a Mentor Link */}
+                <Link
+                  href="/dashboard/mentors/apply"
+                  onClick={() => {
+                    handleProfileMenuClick('become_mentor', '/dashboard/mentors/apply');
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Become a Mentor</span>
+                </Link>
+                
                 <hr className="my-2" />
                 
                 <Link
@@ -332,6 +351,19 @@ export function DashboardNavigation() {
                     <span>View Public Profile</span>
                   </a>
                 )}
+                
+                {/* Become a Mentor Link */}
+                <Link
+                  href="/dashboard/mentors/apply"
+                  onClick={() => {
+                    handleProfileMenuClick('become_mentor', '/dashboard/mentors/apply');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <Users className="h-5 w-5" />
+                  <span>Become a Mentor</span>
+                </Link>
                 
                 <Link
                   href="/contact"
