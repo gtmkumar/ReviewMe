@@ -422,7 +422,7 @@ export default function GitHubPage() {
   const commitHistory = getCommitHistoryData();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNavigation />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -433,14 +433,14 @@ export default function GitHubPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <Github className="h-8 w-8 text-github" />
-                <h1 className="text-3xl font-bold text-gray-900">GitHub Analytics Dashboard</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">GitHub Analytics Dashboard</h1>
               </div>
               
               <div className="flex items-center space-x-4">
                 {/* History Button */}
                 <Link 
                   href="/dashboard/github/history"
-                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                  className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   <History className="h-4 w-4" />
                   <span>View History</span>
@@ -449,7 +449,7 @@ export default function GitHubPage() {
                 {/* Credit Display */}
                 <div className={cn(
                   "flex items-center space-x-2 px-4 py-2 rounded-lg border",
-                  showCreditWarning ? "bg-red-50 border-red-200 text-red-700" : "bg-blue-50 border-blue-200 text-blue-700"
+                  showCreditWarning ? "bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400" : "bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400"
                 )}>
                   <CreditCard className="h-4 w-4" />
                   <span className="font-medium">{credits} Credits</span>
@@ -457,12 +457,12 @@ export default function GitHubPage() {
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                   )}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                   Cost: 20 credits per analysis
                 </div>
               </div>
             </div>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Enter a GitHub username to analyze profile data and repositories with detailed analytics charts.
             </p>
           </div>
@@ -472,8 +472,8 @@ export default function GitHubPage() {
             <div className={cn(
               "mb-6 p-4 rounded-lg border",
               savedDataInfo.source === 'saved' 
-                ? "bg-blue-50 border-blue-200"
-                : "bg-green-50 border-green-200"
+                ? "bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800"
+                : "bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800"
             )}>
               <div className="flex items-center space-x-3">
                 {savedDataInfo.source === 'saved' ? (
@@ -484,7 +484,7 @@ export default function GitHubPage() {
                 <div>
                   <h3 className={cn(
                     "font-medium",
-                    savedDataInfo.source === 'saved' ? "text-blue-800" : "text-green-800"
+                    savedDataInfo.source === 'saved' ? "text-blue-800 dark:text-blue-300" : "text-green-800 dark:text-green-300"
                   )}>
                     {savedDataInfo.source === 'saved' 
                       ? 'Displaying Saved Analytics Data' 
@@ -493,7 +493,7 @@ export default function GitHubPage() {
                   </h3>
                   <p className={cn(
                     "text-sm",
-                    savedDataInfo.source === 'saved' ? "text-blue-700" : "text-green-700"
+                    savedDataInfo.source === 'saved' ? "text-blue-700 dark:text-blue-400" : "text-green-700 dark:text-green-400"
                   )}>
                     Username: {savedDataInfo.username} | Last updated: {new Date(savedDataInfo.lastUpdated).toLocaleString()}
                     {savedDataInfo.source === 'saved' && ' | No credits charged for cached data'}
@@ -505,19 +505,19 @@ export default function GitHubPage() {
 
           {/* Loading Saved Data */}
           {loadingSavedData && (
-            <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <RefreshCw className="h-5 w-5 text-gray-600 animate-spin" />
-                <p className="text-gray-600">Loading saved analytics data...</p>
+                <p className="text-gray-600 dark:text-gray-400">Loading saved analytics data...</p>
               </div>
             </div>
           )}
 
           {/* Search Form */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 mb-8">
             <form onSubmit={handleSubmit} className="flex gap-4">
               <div className="flex-1">
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   GitHub Username
                 </label>
                 <div className="relative">
@@ -529,7 +529,7 @@ export default function GitHubPage() {
                     id="username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
                     placeholder="e.g., octocat"
                     required
                   />
@@ -552,11 +552,11 @@ export default function GitHubPage() {
             </form>
             
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md">
                 <div className="flex">
                   <AlertCircle className="h-5 w-5 text-red-400" />
                   <div className="ml-3">
-                    <p className="text-sm text-red-800">{error}</p>
+                    <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
                   </div>
                 </div>
               </div>
@@ -564,14 +564,14 @@ export default function GitHubPage() {
             
             {/* Transaction Summary */}
             {showTransactionSummary && transactionDetails && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+              <div className="mt-4 p-4 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-md">
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div className="ml-3 flex-1">
-                    <h4 className="text-sm font-medium text-green-800 mb-2">
+                    <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
                       Analysis Complete - Credit Transaction Summary
                     </h4>
-                    <div className="text-sm text-green-700 space-y-1">
+                    <div className="text-sm text-green-700 dark:text-green-400 space-y-1">
                       <div className="flex justify-between">
                         <span>Service:</span>
                         <span className="font-medium">{transactionDetails.serviceType?.toUpperCase()}</span>
@@ -596,7 +596,7 @@ export default function GitHubPage() {
                     <div className="mt-3 flex justify-end">
                       <button
                         onClick={() => setShowTransactionSummary(false)}
-                        className="text-sm text-green-600 hover:text-green-800 font-medium"
+                        className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium"
                       >
                         Dismiss
                       </button>
@@ -615,7 +615,7 @@ export default function GitHubPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* Profile Card */}
-                <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                   <div className="flex items-start space-x-6">
                     <img
                       src={analyticsData.user.avatar_url}
@@ -624,7 +624,7 @@ export default function GitHubPage() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                           {analyticsData.user.name || analyticsData.user.login}
                         </h2>
                         <a
@@ -636,26 +636,26 @@ export default function GitHubPage() {
                           <ExternalLink className="h-5 w-5" />
                         </a>
                       </div>
-                      <p className="text-gray-600 text-lg mb-3">@{analyticsData.user.login}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg mb-3">@{analyticsData.user.login}</p>
                       {analyticsData.user.bio && (
-                        <p className="text-gray-700 mb-4">{analyticsData.user.bio}</p>
+                        <p className="text-gray-700 dark:text-gray-300 mb-4">{analyticsData.user.bio}</p>
                       )}
                       
                       <div className="grid grid-cols-2 gap-4">
                         {analyticsData.user.company && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                             <Users className="h-4 w-4 mr-2" />
                             {analyticsData.user.company}
                           </div>
                         )}
                         {analyticsData.user.location && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                             <MapPin className="h-4 w-4 mr-2" />
                             {analyticsData.user.location}
                           </div>
                         )}
                         {analyticsData.user.blog && (
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                             <LinkIcon className="h-4 w-4 mr-2" />
                             <a 
                               href={analyticsData.user.blog.startsWith('http') ? analyticsData.user.blog : `https://${analyticsData.user.blog}`}
@@ -667,7 +667,7 @@ export default function GitHubPage() {
                             </a>
                           </div>
                         )}
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                           <Calendar className="h-4 w-4 mr-2" />
                           Joined {new Date(analyticsData.user.created_at).toLocaleDateString()}
                         </div>
@@ -677,7 +677,7 @@ export default function GitHubPage() {
                 </div>
 
                 {/* Profile Score */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-4">
                       <Trophy className="h-8 w-8 text-yellow-500" />
@@ -690,26 +690,26 @@ export default function GitHubPage() {
                     )}>
                       {profileScore}
                     </div>
-                    <p className="text-gray-600 text-sm">Profile Score</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Profile Score</p>
                   </div>
                   
                   <div className="mt-6 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Completeness</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Completeness</span>
                       <span className="text-sm font-medium">
                         {[analyticsData.user.name, analyticsData.user.bio, analyticsData.user.location, analyticsData.user.blog, analyticsData.user.company].filter(Boolean).length}/5
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Repositories</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Repositories</span>
                       <span className="text-sm font-medium">{analyticsData.user.public_repos}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Stars</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Stars</span>
                       <span className="text-sm font-medium">{analyticsData.totalStats.totalStars}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Languages</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Languages</span>
                       <span className="text-sm font-medium">{analyticsData.totalStats.languageCount}</span>
                     </div>
                   </div>
@@ -718,42 +718,42 @@ export default function GitHubPage() {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <Book className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{analyticsData.user.public_repos}</div>
-                  <div className="text-sm text-gray-600">Repositories</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.user.public_repos}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Repositories</div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <Star className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.totalStars}</div>
-                  <div className="text-sm text-gray-600">Total Stars</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.totalStats.totalStars}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Stars</div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <GitBranch className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.totalForks}</div>
-                  <div className="text-sm text-gray-600">Total Forks</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.totalStats.totalForks}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Forks</div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{analyticsData.user.followers}</div>
-                  <div className="text-sm text-gray-600">Followers</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.user.followers}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Followers</div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <Code className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{analyticsData.totalStats.languageCount}</div>
-                  <div className="text-sm text-gray-600">Languages</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.totalStats.languageCount}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">Languages</div>
                 </div>
               </div>
 
                {/* Profile Analysis Results */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Strengths */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
                     Strengths
                   </h3>
@@ -767,25 +767,25 @@ export default function GitHubPage() {
                   </ul> */}
                   <div className="space-y-2">
                    {getProfileStrengths().map((strength, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 rounded-lg">
-                        <CheckSquare className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-green-800">{strength}</span>
+                      <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 dark:bg-green-950/50 rounded-lg">
+                        <CheckSquare className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-green-800 dark:text-green-300">{strength}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Areas for Improvement */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
                     Areas for Improvement
                   </h3>
                   <div className="space-y-2">
                    {getProfileWeaknesses().map((weakness, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 rounded-lg">
-                        <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-yellow-800">{weakness}</span>
+                      <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 dark:bg-orange-950/50 rounded-lg">
+                        <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-yellow-800 dark:text-orange-300">{weakness}</span>
                       </div>
                     ))}
                   </div>
@@ -802,8 +802,8 @@ export default function GitHubPage() {
               </div>
 
               {/* Suggestions */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                   <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
                   Suggestions for Growth
                 </h3>
@@ -817,9 +817,9 @@ export default function GitHubPage() {
                 </ul> */}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {getProfileSuggestions().map((suggestion, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                        <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-blue-800">{suggestion}</span>
+                      <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg">
+                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-blue-800 dark:text-blue-300">{suggestion}</span>
                       </div>
                     ))}
                   </div>
@@ -830,10 +830,10 @@ export default function GitHubPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   
                   {/* Repositories by Language */}
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                     <div className="flex items-center space-x-2 mb-4">
                       <BarChart3 className="h-5 w-5 text-blue-600" />
-                      <h3 className="text-lg font-medium text-gray-900">Repositories by Language</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Repositories by Language</h3>
                     </div>
                     <div className="h-64">
                       <Bar data={languageCharts.reposByLanguage} options={chartOptions} />
@@ -841,10 +841,10 @@ export default function GitHubPage() {
                   </div>
 
                   {/* Stars by Language */}
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                     <div className="flex items-center space-x-2 mb-4">
                       <BarChart3 className="h-5 w-5 text-yellow-600" />
-                      <h3 className="text-lg font-medium text-gray-900">Stars by Language</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Stars by Language</h3>
                     </div>
                     <div className="h-64">
                       <Bar data={languageCharts.starsByLanguage} options={chartOptions} />
@@ -852,10 +852,10 @@ export default function GitHubPage() {
                   </div>
 
                   {/* Language Distribution */}
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                     <div className="flex items-center space-x-2 mb-4">
                       <PieChart className="h-5 w-5 text-purple-600" />
-                      <h3 className="text-lg font-medium text-gray-900">Language Distribution</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Language Distribution</h3>
                     </div>
                     <div className="h-64">
                       <Pie data={languageCharts.languageDistribution} options={{
@@ -872,10 +872,10 @@ export default function GitHubPage() {
 
                   {/* Repository Activity Timeline */}
                   {commitHistory && (
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                       <div className="flex items-center space-x-2 mb-4">
                         <TrendingUp className="h-5 w-5 text-green-600" />
-                        <h3 className="text-lg font-medium text-gray-900">Repository Activity (Last 90 Days)</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Repository Activity (Last 90 Days)</h3>
                       </div>
                       <div className="h-64">
                         <Line data={commitHistory} options={{
@@ -897,9 +897,9 @@ export default function GitHubPage() {
 
               {/* Top Repositories */}
               {analyticsData.repositories.length > 0 && (
-                <div className="bg-white rounded-lg shadow">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50">
                   <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Top Repositories</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Top Repositories</h3>
                   </div>
                   <div className="divide-y divide-gray-200">
                     {analyticsData.topRepositories.byStars.slice(0, 6).map((repo) => (

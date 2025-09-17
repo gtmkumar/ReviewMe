@@ -264,7 +264,7 @@ export default function ResumePage() {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNavigation />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -275,7 +275,7 @@ export default function ResumePage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FileText className="h-8 w-8 text-green-600" />
-                <h1 className="text-3xl font-bold text-gray-900">Resume Analysis</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Resume Analysis</h1>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -291,7 +291,7 @@ export default function ResumePage() {
                 {/* History Button */}
                 <Link 
                   href="/dashboard/resume/history"
-                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   <History className="h-4 w-4" />
                   <span>View History</span>
@@ -314,14 +314,14 @@ export default function ResumePage() {
                 )}
               </div>
             </div>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400">
               Upload your resume for professional AI-powered analysis and recommendations. Only PDF files are supported for detailed analysis.
             </p>
           </div>
 
           {/* Upload Section */}
           {!resumeAnalysis && (
-            <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 mb-8">
               <div
                 className={cn(
                   'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
@@ -338,16 +338,16 @@ export default function ResumePage() {
                 {isUploading ? (
                   <div className="flex flex-col items-center">
                     <RefreshCw className="h-12 w-12 text-primary animate-spin mb-4" />
-                    <p className="text-lg font-medium text-gray-900">Processing Resume...</p>
-                    <p className="text-sm text-gray-600">Extracting text and analyzing content</p>
+                    <p className="text-lg font-medium text-gray-900 dark:text-white">Processing Resume...</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Extracting text and analyzing content</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center">
                     <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-lg font-medium text-gray-900 mb-2">
+                    <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                       Drop your resume here or click to browse
                     </p>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                       Supports PDF files up to 10MB for detailed professional analysis
                     </p>
                     <button
@@ -368,11 +368,11 @@ export default function ResumePage() {
               </div>
 
               {error && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md">
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-red-400" />
                     <div className="ml-3 flex-1">
-                      <p className="text-sm text-red-800">{error}</p>
+                      <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
                       {showInsufficientCreditsModal && (
                         <button 
                           onClick={() => {
@@ -393,14 +393,14 @@ export default function ResumePage() {
               )}
               
               {showTransactionSummary && transactionDetails && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-md">
                   <div className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                     <div className="ml-3 flex-1">
-                      <h4 className="text-sm font-medium text-green-800 mb-2">
+                      <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
                         Analysis Complete - Credit Transaction Summary
                       </h4>
-                      <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
+                      <div className="grid grid-cols-2 gap-4 text-sm text-green-700 dark:text-green-400">
                         <div>
                           <span className="font-medium">Service:</span> Resume Analysis
                         </div>
@@ -414,7 +414,7 @@ export default function ResumePage() {
                           <span className="font-medium">Transaction ID:</span> {transactionDetails.id.slice(-8)}
                         </div>
                       </div>
-                      <p className="text-xs text-green-600 mt-2">
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-2">
                         {transactionDetails.description} • {new Date(transactionDetails.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -423,12 +423,12 @@ export default function ResumePage() {
               )}
 
               {/* Tips */}
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="mt-6 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md p-4">
                 <div className="flex">
                   <Info className="h-5 w-5 text-blue-400" />
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">Tips for better analysis:</h3>
-                    <ul className="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
+                    <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Tips for better analysis:</h3>
+                    <ul className="mt-2 text-sm text-blue-700 dark:text-blue-400 list-disc list-inside space-y-1">
                       <li>Upload only PDF files for the most accurate analysis</li>
                       <li>Ensure your resume includes contact information, summary, experience, education, and skills</li>
                       <li>Use standard section headers (Experience, Education, Skills, etc.)</li>
@@ -465,13 +465,13 @@ export default function ResumePage() {
               )}
               
               {/* File Info & Actions */}
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <FileText className="h-8 w-8 text-green-600" />
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{resumeAnalysis.fileName}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{resumeAnalysis.fileName}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {formatFileSize(resumeAnalysis.fileSize)} • 
                         Uploaded {new Date(resumeAnalysis.uploadDate).toLocaleDateString()}
                       </p>
@@ -500,7 +500,7 @@ export default function ResumePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* Score Card */}
-                <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 text-center">
                   <div className="flex items-center justify-center mb-4">
                     <Award className="h-8 w-8 text-yellow-500" />
                   </div>
@@ -512,10 +512,10 @@ export default function ResumePage() {
                   )}>
                     {resumeAnalysis.score}
                   </div>
-                  <p className="text-gray-600 text-sm">Resume Score</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Resume Score</p>
                   
                   <div className="mt-4 text-left">
-                    <div className="text-sm text-gray-600 mb-2">Analysis Status</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Analysis Status</div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Status</span>
@@ -541,50 +541,50 @@ export default function ResumePage() {
                 </div>
 
                 {/* Strengths */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                   <div className="flex items-center space-x-2 mb-4">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <h3 className="text-lg font-medium text-gray-900">Strengths</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Strengths</h3>
                   </div>
                   {resumeAnalysis.strengths.length > 0 ? (
                     <ul className="space-y-2">
                       {resumeAnalysis.strengths.map((strength, index) => (
-                        <li key={index} className="text-sm text-gray-700 flex items-start">
+                        <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start">
                           <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                           {strength}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-gray-600">Review your detailed feedback for improvement areas.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Review your detailed feedback for improvement areas.</p>
                   )}
                 </div>
 
                 {/* Quick Recommendations */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                   <div className="flex items-center space-x-2 mb-4">
                     <Target className="h-5 w-5 text-blue-500" />
-                    <h3 className="text-lg font-medium text-gray-900">Quick Recommendations</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Quick Recommendations</h3>
                   </div>
                   {resumeAnalysis.suggestions.length > 0 ? (
                     <ul className="space-y-2">
                       {resumeAnalysis.suggestions.slice(0, 3).map((suggestion, index) => (
-                        <li key={index} className="text-sm text-gray-700 flex items-start">
+                        <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start">
                           <TrendingUp className="h-4 w-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
                           {suggestion.length > 80 ? suggestion.substring(0, 80) + '...' : suggestion}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-green-600">Great! No major improvements needed.</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">Great! No major improvements needed.</p>
                   )}
                 </div>
               </div>
 
               {/* Detailed Professional Feedback */}
               {resumeAnalysis.detailedFeedback.length > 0 && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <Eye className="h-5 w-5 text-blue-500 mr-2" />
                     Professional Analysis & Feedback
                   </h3>
@@ -645,7 +645,7 @@ export default function ResumePage() {
                                 </span>
                                 <span className="text-xs text-gray-500">Issue #{index + 1}</span>
                               </div>
-                              <p className="text-sm text-gray-800 leading-relaxed">
+                              <p className="text-sm text-gray-800 dark:text-gray-300 leading-relaxed">
                                 {feedback}
                               </p>
                             </div>
@@ -658,8 +658,8 @@ export default function ResumePage() {
               )}
 
               {/* Summary Statistics */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                   <BarChart3 className="h-5 w-5 text-indigo-500 mr-2" />
                   Analysis Summary
                 </h3>
@@ -685,18 +685,18 @@ export default function ResumePage() {
 
               {/* Areas for Improvement */}
               {resumeAnalysis.weaknesses.length > 0 && (
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6">
                   <div className="flex items-center space-x-2 mb-4">
                     <AlertTriangle className="h-5 w-5 text-red-500" />
-                    <h3 className="text-lg font-medium text-gray-900">Areas for Improvement</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Areas for Improvement</h3>
                   </div>
                   <ul className="space-y-3">
                     {resumeAnalysis.weaknesses.map((weakness, index) => (
-                      <li key={index} className="text-sm text-gray-700 flex items-start p-3 bg-red-50 rounded-lg">
+                      <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start p-3 bg-red-50 rounded-lg">
                         <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
                         <div>
                           <span className="font-medium">{weakness}</span>
-                          <p className="text-xs text-gray-600 mt-1">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             Review the detailed feedback above for specific suggestions on how to address this issue.
                           </p>
                         </div>
@@ -765,7 +765,7 @@ export default function ResumePage() {
             <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
             <div>
               <p className="text-sm font-medium text-gray-900">Analysis Complete!</p>
-              <p className="text-xs text-gray-600">Resume analyzed successfully</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Resume analyzed successfully</p>
             </div>
           </div>
         </div>

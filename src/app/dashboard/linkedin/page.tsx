@@ -502,7 +502,7 @@ export default function LinkedInPage() {
   const profileScore = calculateLinkedInScore();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNavigation />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -513,7 +513,7 @@ export default function LinkedInPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <Linkedin className="h-8 w-8 text-linkedin" />
-                <h1 className="text-3xl font-bold text-gray-900">LinkedIn Profile Analysis</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">LinkedIn Profile Analysis</h1>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -529,7 +529,7 @@ export default function LinkedInPage() {
                 {/* History Button */}
                 <Link 
                   href="/dashboard/linkedin/history"
-                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                  className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300"
                 >
                   <History className="h-4 w-4" />
                   <span>View History</span>
@@ -552,7 +552,7 @@ export default function LinkedInPage() {
                 )}
               </div>
             </div>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400">
               Analyze your LinkedIn profile by entering the URL or manually inputting your information.
             </p>
           </div>
@@ -597,14 +597,14 @@ export default function LinkedInPage() {
           {loadingSavedData && (
             <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
               <div className="flex items-center space-x-3">
-                <RefreshCw className="h-5 w-5 text-gray-600 animate-spin" />
-                <p className="text-gray-600">Loading saved profile data...</p>
+                <RefreshCw className="h-5 w-5 text-gray-600 dark:text-gray-400 animate-spin" />
+                <p className="text-gray-600 dark:text-gray-400">Loading saved profile data...</p>
               </div>
             </div>
           )}
 
           {/* Method Selection */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 mb-8">
             <div className="flex space-x-4 mb-6">
               <button
                 onClick={() => setAnalysisMethod('extract')}
@@ -612,7 +612,7 @@ export default function LinkedInPage() {
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                   analysisMethod === 'extract'
                     ? 'bg-linkedin text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 )}
               >
                 Extract Profile
@@ -623,7 +623,7 @@ export default function LinkedInPage() {
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                   analysisMethod === 'url'
                     ? 'bg-linkedin text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 )}
               >
                 Profile URL
@@ -634,7 +634,7 @@ export default function LinkedInPage() {
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                   analysisMethod === 'manual'
                     ? 'bg-linkedin text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 )}
               >
                 Manual Entry
@@ -646,7 +646,7 @@ export default function LinkedInPage() {
             {analysisMethod === 'extract' ? (
               <form onSubmit={(e) => { e.preventDefault(); handleExtractProfile(); }}>
                 <div className="mb-4">
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     LinkedIn Username
                   </label>
                   <div className="relative">
@@ -658,12 +658,12 @@ export default function LinkedInPage() {
                       id="username"
                       value={username}
                       onChange={(e) => handleUsernameChange(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
                       placeholder="thedevankit"
                       required
                     />
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                     Enter the LinkedIn username (without the full URL). For example: 'thedevankit' from linkedin.com/in/thedevankit
                   </p>
                 </div>
@@ -683,7 +683,7 @@ export default function LinkedInPage() {
             ) : analysisMethod === 'url' ? (
               <form onSubmit={handleUrlSubmit}>
                 <div className="mb-4">
-                  <label htmlFor="profileUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="profileUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     LinkedIn Profile URL
                   </label>
                   <div className="relative">
@@ -695,12 +695,12 @@ export default function LinkedInPage() {
                       id="profileUrl"
                       value={profileUrl}
                       onChange={(e) => setProfileUrl(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
                       placeholder="https://linkedin.com/in/your-username"
                       required
                     />
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                     Note: LinkedIn blocks automated data extraction. This feature shows how it would work with proper API access.
                   </p>
                 </div>
@@ -722,42 +722,42 @@ export default function LinkedInPage() {
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
                     <input
                       type="text"
                       value={manualData.name}
                       onChange={(e) => setManualData(prev => ({ ...prev, name: e.target.value }))}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Headline</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headline</label>
                     <input
                       type="text"
                       value={manualData.headline}
                       onChange={(e) => setManualData(prev => ({ ...prev, headline: e.target.value }))}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="e.g., Software Engineer at Company"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
                     <input
                       type="text"
                       value={manualData.location}
                       onChange={(e) => setManualData(prev => ({ ...prev, location: e.target.value }))}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="e.g., San Francisco, CA"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Connections</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Connections</label>
                     <input
                       type="number"
                       value={manualData.connections}
                       onChange={(e) => setManualData(prev => ({ ...prev, connections: parseInt(e.target.value) || 0 }))}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="500+"
                     />
                   </div>
@@ -765,30 +765,30 @@ export default function LinkedInPage() {
 
                 {/* Summary */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Summary</label>
                   <textarea
                     value={manualData.summary}
                     onChange={(e) => setManualData(prev => ({ ...prev, summary: e.target.value }))}
                     rows={4}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Brief summary of your professional background..."
                   />
                 </div>
 
                 {/* Skills */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</label>
                   <input
                     type="text"
                     value={manualData.skills}
                     onChange={(e) => setManualData(prev => ({ ...prev, skills: e.target.value }))}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="JavaScript, React, Node.js, Python (comma-separated)"
                   />
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">Experience</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Experience</h3>
                   <button
                     type="button"
                     onClick={addExperience}
@@ -799,7 +799,7 @@ export default function LinkedInPage() {
                 </div>
 
                 {manualData.experience.map((exp, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 rounded-md">
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800">
                     <input
                       type="text"
                       value={exp.title}
@@ -808,7 +808,7 @@ export default function LinkedInPage() {
                         newExp[index].title = e.target.value;
                         setManualData(prev => ({ ...prev, experience: newExp }));
                       }}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Job Title"
                     />
                     <input
@@ -819,7 +819,7 @@ export default function LinkedInPage() {
                         newExp[index].company = e.target.value;
                         setManualData(prev => ({ ...prev, experience: newExp }));
                       }}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Company"
                     />
                     <input
@@ -830,7 +830,7 @@ export default function LinkedInPage() {
                         newExp[index].duration = e.target.value;
                         setManualData(prev => ({ ...prev, experience: newExp }));
                       }}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Jan 2020 - Present"
                     />
                     <textarea
@@ -840,7 +840,7 @@ export default function LinkedInPage() {
                         newExp[index].description = e.target.value;
                         setManualData(prev => ({ ...prev, experience: newExp }));
                       }}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Job description..."
                     />
                   </div>
@@ -857,11 +857,11 @@ export default function LinkedInPage() {
             )}
             
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md">
                 <div className="flex">
                   <AlertCircle className="h-5 w-5 text-red-400" />
                   <div className="ml-3 flex-1">
-                    <p className="text-sm text-red-800">{error}</p>
+                    <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
                     {showInsufficientCreditsModal && (
                       <button 
                         onClick={() => {
@@ -882,14 +882,14 @@ export default function LinkedInPage() {
             )}
             
             {showTransactionSummary && transactionDetails && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+              <div className="mt-4 p-4 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-md">
                 <div className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div className="ml-3 flex-1">
-                    <h4 className="text-sm font-medium text-green-800 mb-2">
+                    <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
                       Analysis Complete - Credit Transaction Summary
                     </h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
+                    <div className="grid grid-cols-2 gap-4 text-sm text-green-700 dark:text-green-400">
                       <div>
                         <span className="font-medium">Service:</span> LinkedIn Analysis
                       </div>
@@ -903,7 +903,7 @@ export default function LinkedInPage() {
                         <span className="font-medium">Transaction ID:</span> {transactionDetails.id ? transactionDetails.id.slice(-8) : 'N/A'}
                       </div>
                     </div>
-                    <p className="text-xs text-green-600 mt-2">
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
                       {transactionDetails.description || 'LinkedIn Analysis'} • {new Date(transactionDetails.timestamp).toLocaleString()}
                     </p>
                   </div>
@@ -913,7 +913,7 @@ export default function LinkedInPage() {
           </div>
 
           {/* RedactAI Analyses Section - COMMENTED OUT */}
-          {/* <div className="bg-white rounded-lg shadow p-6 mb-8">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-linkedin/10 rounded-lg flex items-center justify-center">
@@ -942,7 +942,7 @@ export default function LinkedInPage() {
                     <span className="text-xs text-gray-500">Ready</span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   Get AI-powered insights, optimization suggestions, and detailed analysis of your LinkedIn profile.
                 </p>
                 <div className="flex items-center justify-between">
@@ -961,14 +961,14 @@ export default function LinkedInPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <Users className="h-5 w-5 text-gray-400" />
-                    <span className="font-medium text-gray-600">Network Analysis</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">Network Analysis</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     <span className="text-xs text-gray-500">Soon</span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   Analyze your professional network connections and identify growth opportunities.
                 </p>
                 <div className="flex items-center justify-between">
@@ -982,14 +982,14 @@ export default function LinkedInPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <TrendingUp className="h-5 w-5 text-gray-400" />
-                    <span className="font-medium text-gray-600">Performance Tracking</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">Performance Tracking</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     <span className="text-xs text-gray-500">Soon</span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   Track profile views, engagement metrics, and optimization progress over time.
                 </p>
                 <div className="flex items-center justify-between">
@@ -1002,12 +1002,12 @@ export default function LinkedInPage() {
 
           {/* Success Notification */}
           {showSuccessNotification && (
-            <div className="fixed top-4 right-4 z-50 max-w-sm bg-white border border-green-200 rounded-lg shadow-lg p-4">
+            <div className="fixed top-4 right-4 z-50 max-w-sm bg-white dark:bg-gray-800 border border-green-200 dark:border-green-800 rounded-lg shadow-lg p-4">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Analysis Complete!</p>
-                  <p className="text-xs text-gray-600">LinkedIn profile analyzed successfully</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Analysis Complete!</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">LinkedIn profile analyzed successfully</p>
                 </div>
               </div>
             </div>
@@ -1021,7 +1021,7 @@ export default function LinkedInPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* LinkedIn-style Profile Card */}
-                <div className="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50-lg overflow-hidden">
                   {/* Cover Section */}
                   <div className="h-32 bg-gradient-to-r from-primary to-primary/80"></div>
                   
@@ -1045,18 +1045,18 @@ export default function LinkedInPage() {
                       <div className="flex-1 pt-20">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{profile.name}</h1>
                             {profile.headline && (
-                              <p className="text-lg text-gray-700 mb-2">{profile.headline}</p>
+                              <p className="text-lg text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-2">{profile.headline}</p>
                             )}
                             {profile.location && (
-                              <div className="flex items-center text-gray-600 mb-3">
+                              <div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
                                 <MapPin className="h-4 w-4 mr-2" />
                                 <span>{profile.location}</span>
                               </div>
                             )}
                             {profile.connections > 0 && (
-                              <div className="flex items-center text-gray-600 text-sm">
+                              <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
                                 <Users className="h-4 w-4 mr-2" />
                                 <span>{profile.connections.toLocaleString()} connections</span>
                               </div>
@@ -1082,8 +1082,8 @@ export default function LinkedInPage() {
                         {/* About Section */}
                         {profile.summary && (
                           <div className="mt-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">About</h3>
-                            <p className="text-gray-700 leading-relaxed">{profile.summary}</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white mb-2">About</h3>
+                            <p className="text-gray-700 dark:text-gray-300 dark:text-gray-300 leading-relaxed">{profile.summary}</p>
                           </div>
                         )}
                       </div>
@@ -1092,7 +1092,7 @@ export default function LinkedInPage() {
                 </div>
 
                 {/* Profile Score */}
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50-lg p-6">
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-4">
                       <div className="p-3 bg-primary/10 rounded-full">
@@ -1107,13 +1107,13 @@ export default function LinkedInPage() {
                     )}>
                       {profileScore}
                     </div>
-                    <p className="text-gray-600 text-sm font-medium">Profile Score</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Profile Score</p>
                   </div>
                   
                   {/* Score Breakdown */}
                   <div className="mt-6 space-y-4">
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 flex items-center">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                         <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
                         Profile Complete
                       </span>
@@ -1121,22 +1121,22 @@ export default function LinkedInPage() {
                         {[profile.name, profile.headline, profile.location, profile.summary].filter(Boolean).length}/4
                       </span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 flex items-center">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                         <Briefcase className="h-4 w-4 mr-2 text-blue-500" />
                         Experience
                       </span>
                       <span className="text-sm font-medium text-primary">{profile.experience.length}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 flex items-center">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                         <Award className="h-4 w-4 mr-2 text-purple-500" />
                         Skills
                       </span>
                       <span className="text-sm font-medium text-primary">{profile.skills.length}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-sm text-gray-600 flex items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                         <Users className="h-4 w-4 mr-2 text-orange-500" />
                         Network
                       </span>
@@ -1148,29 +1148,29 @@ export default function LinkedInPage() {
 
               {/* Experience */}
               {profile.experience.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
                       <Briefcase className="h-6 w-6 mr-3 text-primary" />
                       Experience
                     </h3>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {profile.experience.map((exp, index) => (
-                      <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
+                      <div key={index} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <div className="flex items-start space-x-4">
                           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Building className="h-6 w-6 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">{exp.title}</h4>
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white mb-1">{exp.title}</h4>
                             <p className="text-primary font-medium mb-1">{exp.company}</p>
-                            <div className="flex items-center text-sm text-gray-600 mb-3">
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
                               <Calendar className="h-4 w-4 mr-1" />
                               <span>{exp.duration}</span>
                             </div>
                             {exp.description && (
-                              <p className="text-gray-700 leading-relaxed">{exp.description}</p>
+                              <p className="text-gray-700 dark:text-gray-300 dark:text-gray-300 leading-relaxed">{exp.description}</p>
                             )}
                           </div>
                         </div>
@@ -1182,26 +1182,26 @@ export default function LinkedInPage() {
 
               {/* Education */}
               {profile.education.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
                       <GraduationCap className="h-6 w-6 mr-3 text-primary" />
                       Education
                     </h3>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {profile.education.map((edu, index) => (
-                      <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
+                      <div key={index} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <div className="flex items-start space-x-4">
                           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                             <GraduationCap className="h-6 w-6 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">{edu.school}</h4>
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{edu.school}</h4>
                             <p className="text-primary font-medium mb-1">
                               {edu.degree} {edu.field && `in ${edu.field}`}
                             </p>
-                            <div className="flex items-center text-sm text-gray-600">
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                               <Calendar className="h-4 w-4 mr-1" />
                               <span>{edu.years}</span>
                             </div>
@@ -1215,9 +1215,9 @@ export default function LinkedInPage() {
 
               {/* Skills */}
               {profile.skills.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50-lg overflow-hidden">
+                  <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
                       <Award className="h-6 w-6 mr-3 text-primary" />
                       Skills & Endorsements
                     </h3>
@@ -1227,10 +1227,10 @@ export default function LinkedInPage() {
                       {profile.skills.map((skill, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/30 transition-colors"
+                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-primary/30 transition-colors"
                         >
-                          <span className="font-medium text-gray-900">{skill}</span>
-                          <div className="flex items-center space-x-1 text-sm text-gray-600">
+                          <span className="font-medium text-gray-900 dark:text-white">{skill}</span>
+                          <div className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-400">
                             <Users className="h-4 w-4" />
                             <span>{Math.floor(Math.random() * 50) + 1}</span>
                           </div>

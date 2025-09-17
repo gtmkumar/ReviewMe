@@ -146,7 +146,7 @@ export default async function RootLayout({
           media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning={true}>
         <Providers session={session}>
           <div className="relative flex min-h-screen flex-col">
             <main id="main" className="flex-1">

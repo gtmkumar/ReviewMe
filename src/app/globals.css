@@ -29,25 +29,25 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.1 76.2% 36.3%;
   }
 }
 
@@ -94,24 +94,48 @@
     @apply text-green-600 bg-green-50 border-green-200;
   }
   
+  .dark .score-excellent {
+    @apply text-green-400 bg-green-950/50 border-green-800;
+  }
+  
   .score-good {
     @apply text-blue-600 bg-blue-50 border-blue-200;
+  }
+  
+  .dark .score-good {
+    @apply text-blue-400 bg-blue-950/50 border-blue-800;
   }
   
   .score-average {
     @apply text-yellow-600 bg-yellow-50 border-yellow-200;
   }
   
+  .dark .score-average {
+    @apply text-yellow-400 bg-yellow-950/50 border-yellow-800;
+  }
+  
   .score-poor {
     @apply text-red-600 bg-red-50 border-red-200;
+  }
+  
+  .dark .score-poor {
+    @apply text-red-400 bg-red-950/50 border-red-800;
   }
   
   .integration-connected {
     @apply bg-green-50 border-green-200 text-green-800;
   }
   
+  .dark .integration-connected {
+    @apply bg-green-950/50 border-green-800 text-green-300;
+  }
+  
   .integration-disconnected {
     @apply bg-gray-50 border-gray-200 text-gray-600;
+  }
+  
+  .dark .integration-disconnected {
+    @apply bg-gray-950/50 border-gray-800 text-gray-400;
   }
 }
 

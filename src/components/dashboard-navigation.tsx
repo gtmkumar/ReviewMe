@@ -7,10 +7,11 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { 
   BarChart3, Github, Linkedin, FileText, Settings, LogOut, 
-  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare, History, Users
+  Home, User, ChevronDown, ExternalLink, Menu, X, Globe, MessageSquare, History, Users, Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { ThemeToggle } from './theme-toggle';
 
 const navigationItems = [
   {
@@ -91,13 +92,13 @@ export function DashboardNavigation() {
   }, [isUserMenuOpen, isMobileMenuOpen]);
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-white dark:bg-gray-900 shadow dark:shadow-gray-800/50 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
           {/* Logo */}
           <div className="flex items-center">
             <BarChart3 className="h-8 w-8 text-primary" />
-            <h1 className="ml-3 text-2xl font-bold text-gray-900">ReviewMe</h1>
+            <h1 className="ml-3 text-2xl font-bold text-gray-900 dark:text-white">ReviewMe</h1>
           </div>
           
           {/* Navigation Links */}
@@ -115,7 +116,7 @@ export function DashboardNavigation() {
                     'flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-primary/10 text-primary'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800'
                   )}
                   title={item.description}
                 >
@@ -127,11 +128,12 @@ export function DashboardNavigation() {
           </nav>
 
           {/* Mobile Navigation Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle variant="minimal" className="h-8 w-8" />
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             >
               <span className="sr-only">Open main menu</span>
               {isMobileMenuOpen ? (
@@ -142,121 +144,138 @@ export function DashboardNavigation() {
             </button>
           </div>
           
-          {/* User Menu */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              {session?.user?.image ? (
-                <img
-                  src={session.user.image}
-                  alt={session.user.name || 'User'}
-                  className="h-8 w-8 rounded-full"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <span className="hidden sm:block">
-                {session?.user?.name || 'User'}
-              </span>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
-            </button>
+          {/* Desktop Theme Toggle & User Menu */}
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle variant="minimal" />
+            
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+              >
+                {session?.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    className="h-8 w-8 rounded-full"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                <span className="hidden sm:block">
+                  {session?.user?.name || 'User'}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
 
-            {/* Dropdown Menu */}
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                <Link
-                  href="/dashboard/settings"
-                  onClick={() => {
-                    handleProfileMenuClick('edit_profile', '/dashboard/settings');
-                    setIsUserMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Edit Profile</span>
-                </Link>
-                
-                <Link
-                  href="/dashboard/transactions"
-                  onClick={() => {
-                    handleProfileMenuClick('transactions', '/dashboard/transactions');
-                    setIsUserMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <History className="h-4 w-4" />
-                  <span>Transaction History</span>
-                </Link>
-                
-                {/* Public Profile Link */}
-                {session?.user && (
-                  <a
-                    href={`/u/${session.user.publicUsername || session.user.name?.toLowerCase().replace(/\s+/g, '-') || 'user'}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  <Link
+                    href="/dashboard/settings"
                     onClick={() => {
-                      handleProfileMenuClick('view_public', `/u/${session.user.publicUsername || session.user.name?.toLowerCase().replace(/\s+/g, '-') || 'user'}`);
+                      handleProfileMenuClick('edit_profile', '/dashboard/settings');
                       setIsUserMenuOpen(false);
                     }}
-                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <ExternalLink className="h-4 w-4" />
-                    <span>View Public Profile</span>
-                  </a>
-                )}
+                    <Settings className="h-4 w-4" />
+                    <span>Edit Profile</span>
+                  </Link>
                 
-                {/* Become a Mentor Link */}
-                <Link
-                  href="/dashboard/mentors/apply"
-                  onClick={() => {
-                    handleProfileMenuClick('become_mentor', '/dashboard/mentors/apply');
-                    setIsUserMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Users className="h-4 w-4" />
-                  <span>Become a Mentor</span>
-                </Link>
+                  <Link
+                    href="/dashboard/sessions"
+                    onClick={() => {
+                      handleProfileMenuClick('my_sessions', '/dashboard/sessions');
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    <span>My Sessions</span>
+                  </Link>
                 
-                <hr className="my-2" />
+                  <Link
+                    href="/dashboard/transactions"
+                    onClick={() => {
+                      handleProfileMenuClick('transactions', '/dashboard/transactions');
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <History className="h-4 w-4" />
+                    <span>Transaction History</span>
+                  </Link>
                 
-                <Link
-                  href="/contact"
-                  onClick={() => {
-                    handleProfileMenuClick('help_contact', '/contact');
-                    setIsUserMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Help & Contact</span>
-                </Link>
+                  {/* Public Profile Link */}
+                  {session?.user && (
+                    <a
+                      href={`/u/${session.user.publicUsername || session.user.name?.toLowerCase().replace(/\s+/g, '-') || 'user'}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        handleProfileMenuClick('view_public', `/u/${session.user.publicUsername || session.user.name?.toLowerCase().replace(/\s+/g, '-') || 'user'}`);
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span>View Public Profile</span>
+                    </a>
+                  )}
                 
-                <hr className="my-2" />
+                  {/* Become a Mentor Link */}
+                  <Link
+                    href="/dashboard/mentors/apply"
+                    onClick={() => {
+                      handleProfileMenuClick('become_mentor', '/dashboard/mentors/apply');
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>Become a Mentor</span>
+                  </Link>
                 
-                <button
-                  onClick={() => {
-                    handleSignOut();
-                    setIsUserMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            )}
+                  <hr className="my-2" />
+                
+                  <Link
+                    href="/contact"
+                    onClick={() => {
+                      handleProfileMenuClick('help_contact', '/contact');
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Help & Contact</span>
+                  </Link>
+                
+                  <hr className="my-2" />
+                
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200">
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <nav className="space-y-1 px-4 pt-4 pb-3">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
@@ -274,7 +293,7 @@ export function DashboardNavigation() {
                       'flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors',
                       isActive
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800'
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -288,7 +307,7 @@ export function DashboardNavigation() {
             </nav>
             
             {/* Mobile Profile Menu */}
-            <div className="border-t border-gray-200 pt-4 pb-3 px-4">
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-4 pb-3 px-4">
               <div className="flex items-center space-x-3 mb-3">
                 {session?.user?.image ? (
                   <img
@@ -302,10 +321,10 @@ export function DashboardNavigation() {
                   </div>
                 )}
                 <div>
-                  <div className="text-base font-medium text-gray-900">
+                  <div className="text-base font-medium text-gray-900 dark:text-white">
                     {session?.user?.name || 'User'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     {session?.user?.email}
                   </div>
                 </div>
@@ -318,10 +337,22 @@ export function DashboardNavigation() {
                     handleProfileMenuClick('edit_profile', '/dashboard/settings');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <Settings className="h-5 w-5" />
                   <span>Edit Profile</span>
+                </Link>
+                
+                <Link
+                  href="/dashboard/sessions"
+                  onClick={() => {
+                    handleProfileMenuClick('my_sessions', '/dashboard/sessions');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span>My Sessions</span>
                 </Link>
                 
                 <Link
@@ -330,7 +361,7 @@ export function DashboardNavigation() {
                     handleProfileMenuClick('transactions', '/dashboard/transactions');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <History className="h-5 w-5" />
                   <span>Transaction History</span>
@@ -345,7 +376,7 @@ export function DashboardNavigation() {
                       handleProfileMenuClick('view_public', `/u/${session.user.publicUsername || session.user.name?.toLowerCase().replace(/\s+/g, '-') || 'user'}`);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
                   >
                     <ExternalLink className="h-5 w-5" />
                     <span>View Public Profile</span>
@@ -359,7 +390,7 @@ export function DashboardNavigation() {
                     handleProfileMenuClick('become_mentor', '/dashboard/mentors/apply');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <Users className="h-5 w-5" />
                   <span>Become a Mentor</span>
@@ -371,7 +402,7 @@ export function DashboardNavigation() {
                     handleProfileMenuClick('help_contact', '/contact');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <MessageSquare className="h-5 w-5" />
                   <span>Help & Contact</span>
@@ -382,7 +413,7 @@ export function DashboardNavigation() {
                     handleSignOut();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors w-full text-left"
+                  className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 rounded-md transition-colors w-full text-left"
                 >
                   <LogOut className="h-5 w-5" />
                   <span>Sign Out</span>

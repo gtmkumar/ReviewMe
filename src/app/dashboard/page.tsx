@@ -235,7 +235,7 @@ export default function DashboardPage() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNavigation />
       
       {/* Main Content */}
@@ -246,10 +246,10 @@ export default function DashboardPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   Welcome back, {session.user?.name || 'User'}!
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   Here's an overview of your professional profile analysis. Click on any section to dive deeper.
                 </p>
               </div>
@@ -262,11 +262,11 @@ export default function DashboardPage() {
                       window.showReferralModal();
                     }
                   }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
                 >
-                  <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="text-blue-700 font-medium">Credits: </span>
-                  <span className="text-blue-900 font-bold">{credits}</span>
+                  <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-blue-700 dark:text-blue-300 font-medium">Credits: </span>
+                  <span className="text-blue-900 dark:text-blue-200 font-bold">{credits}</span>
                 </button>
                 
                 {/* <Link 
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                   }}
                   className={cn(
                     "px-4 py-2 rounded-lg transition-colors",
-                    showAnalytics ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                    showAnalytics ? "bg-purple-600 text-white" : "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50"
                   )}
                 >
                   <BarChart3 className="h-4 w-4 inline mr-2" />
@@ -297,7 +297,7 @@ export default function DashboardPage() {
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <div 
-              className="bg-white rounded-lg shadow p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => {
                 trackClick('overall_score_card', '/dashboard');
                 // Could show a detailed breakdown modal
@@ -306,8 +306,8 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-primary">
                 {metrics.overallScore}
               </div>
-              <div className="text-sm text-gray-500">Overall Score</div>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Overall Score</div>
+              <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${metrics.overallScore}%` }}
@@ -317,13 +317,13 @@ export default function DashboardPage() {
             
             <Link 
               href="/dashboard/github" 
-              className="bg-white rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
               onClick={() => trackClick('repositories_card', '/dashboard/github')}
             >
               <div className="text-2xl font-bold text-github group-hover:text-github/80 transition-colors">
                 {metrics.repositoriesCount}
               </div>
-              <div className="text-sm text-gray-500">Repositories</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Repositories</div>
               {platforms.github.connected && (
                 <div className="mt-2 flex items-center justify-center text-xs text-gray-400">
                   <Github className="h-3 w-3 mr-1" />
@@ -333,7 +333,7 @@ export default function DashboardPage() {
             </Link>
             
             <div 
-              className="bg-white rounded-lg shadow p-6 text-center cursor-pointer hover:shadow-lg transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center cursor-pointer hover:shadow-lg transition-shadow group"
               onClick={() => {
                 trackClick('recommendations_card', '/dashboard');
                 // Navigate to recommendations section or show modal
@@ -346,7 +346,7 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-green-600 group-hover:text-green-500 transition-colors">
                 {metrics.recommendationsCount}
               </div>
-              <div className="text-sm text-gray-500">Recommendations</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Recommendations</div>
               {metrics.recommendationsCount > 0 && (
                 <div className="mt-2 flex items-center justify-center text-xs text-green-600">
                   <AlertCircle className="h-3 w-3 mr-1" />
@@ -357,13 +357,13 @@ export default function DashboardPage() {
             
             <Link 
               href="/dashboard/resume" 
-              className="bg-white rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
               onClick={() => trackClick('documents_card', '/dashboard/resume')}
             >
               <div className="text-2xl font-bold text-purple-600 group-hover:text-purple-500 transition-colors">
                 {metrics.documentsCount}
               </div>
-              <div className="text-sm text-gray-500">Documents</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Documents</div>
               {platforms.resume.uploaded && (
                 <div className="mt-2 flex items-center justify-center text-xs text-green-600">
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -374,13 +374,13 @@ export default function DashboardPage() {
             
             <Link 
               href="/dashboard/blogs" 
-              className="bg-white rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow group"
               onClick={() => trackClick('blogs_card', '/dashboard/blogs')}
             >
               <div className="text-2xl font-bold text-indigo-600 group-hover:text-indigo-500 transition-colors">
                 {metrics.blogsCount}
               </div>
-              <div className="text-sm text-gray-500">Blogs</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Blogs</div>
               {platforms.blogs.connected && (
                 <div className="mt-2 flex items-center justify-center text-xs text-indigo-600">
                   <Zap className="h-3 w-3 mr-1" />
@@ -399,11 +399,11 @@ export default function DashboardPage() {
               className="group"
               onClick={() => trackClick('github_card', '/dashboard/github')}
             >
-              <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 cursor-pointer">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6 cursor-pointer">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <Github className="h-8 w-8 text-github" />
-                    <h3 className="text-xl font-semibold text-gray-900">GitHub Profile</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">GitHub Profile</h3>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-github transition-colors" />
                 </div>
@@ -411,21 +411,21 @@ export default function DashboardPage() {
                 {platforms.github.connected ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Score</span>
-                      <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Score</span>
+                      <div className="flex items-center space-x-2  dark:text-gray-200">
                         <span className="text-lg font-semibold text-github">{platforms.github.score}/100</span>
                         {platforms.github.lastUpdated && (
                           <div className="w-2 h-2 bg-green-500 rounded-full" title="Data is fresh"></div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-200">
                       <span>@{platforms.github.username}</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {dashboardData?.data?.stats?.github?.totalRequests || 0} requests
                       </span>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center space-x-1">
                         <Users className="h-4 w-4" />
                         <span>{platforms.github.followers || 0}</span>
@@ -435,9 +435,9 @@ export default function DashboardPage() {
                         <span>{platforms.github.repositories?.length || 0}</span>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
-                        className="bg-github h-2 rounded-full transition-all duration-300" 
+                        className="bg-github h-2 rounded-full transition-all duration-300 dark:bg-purple-700 " 
                         style={{ width: `${platforms.github.score}%` }}
                       ></div>
                     </div>
@@ -445,7 +445,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-center py-8">
                     <Github className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Connect your GitHub profile to analyze your coding activity
                     </p>
                     <div className="flex items-center justify-center space-x-2 text-github text-sm font-medium">
@@ -458,12 +458,12 @@ export default function DashboardPage() {
             </Link>
 
             {/* LinkedIn Section */}
-            <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <Linkedin className="h-8 w-8 text-linkedin" />
-                    <h3 className="text-xl font-semibold text-gray-900">LinkedIn Profile</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">LinkedIn Profile</h3>
                   </div>
                   <Link href="/dashboard/linkedin" className="text-linkedin hover:text-linkedin/80 transition-colors">
                     <ArrowRight className="h-5 w-5" />
@@ -473,7 +473,7 @@ export default function DashboardPage() {
                 {platforms.linkedin.connected ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Profile Score</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Profile Score</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-lg font-semibold text-linkedin">{platforms.linkedin.score}/100</span>
                         {platforms.linkedin.lastUpdated && (
@@ -484,24 +484,24 @@ export default function DashboardPage() {
                     
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Name:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Name:</span>
                         <span className="font-medium">{platforms.linkedin.name}</span>
                       </div>
                       {platforms.linkedin.headline && (
                         <div className="flex items-start justify-between">
-                          <span className="text-gray-600">Headline:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Headline:</span>
                           <span className="font-medium text-right text-xs max-w-32 truncate">{platforms.linkedin.headline}</span>
                         </div>
                       )}
                       {platforms.linkedin.connectionCount && (
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Connections:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Connections:</span>
                           <span className="font-medium">{platforms.linkedin.connectionCount}</span>
                         </div>
                       )}
                     </div>
                     
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-linkedin h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${platforms.linkedin.score}%` }}
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-center py-8">
                     <Linkedin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Analyze your LinkedIn profile for professional optimization
                     </p>
                     <Link href="/dashboard/linkedin" className="flex items-center justify-center space-x-2 text-linkedin text-sm font-medium hover:text-linkedin/80 transition-colors">
@@ -524,12 +524,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Resume Section */}
-            <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <FileText className="h-8 w-8 text-green-600" />
-                    <h3 className="text-xl font-semibold text-gray-900">Resume Analysis</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Resume Analysis</h3>
                   </div>
                   <Link href="/dashboard/resume" className="text-green-600 hover:text-green-500 transition-colors">
                     <ArrowRight className="h-5 w-5" />
@@ -539,24 +539,24 @@ export default function DashboardPage() {
                 {platforms.resume.uploaded ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">ATS Score</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">ATS Score</span>
                       <span className="text-lg font-semibold text-green-600">{platforms.resume.score}/100</span>
                     </div>
                     
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">File:</span>
+                        <span className="text-gray-600 dark:text-gray-400">File:</span>
                         <span className="font-medium">{platforms.resume.fileName}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Uploaded:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Uploaded:</span>
                         <span className="font-medium">
                           {platforms.resume.uploadedAt ? new Date(platforms.resume.uploadedAt).toLocaleDateString() : 'Unknown'}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-green-500 h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${platforms.resume.score}%` }}
@@ -565,7 +565,7 @@ export default function DashboardPage() {
                     
                     <button
                       onClick={() => toggleSection('resume-details')}
-                      className="w-full flex items-center justify-between py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                      className="w-full flex items-center justify-between py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
                     >
                       <span>View Analysis</span>
                       {expandedSections['resume-details'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -589,7 +589,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-center py-8">
                     <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Upload your resume for ATS compatibility analysis
                     </p>
                     <Link href="/dashboard/resume" className="flex items-center justify-center space-x-2 text-green-600 text-sm font-medium hover:text-green-500 transition-colors">
@@ -606,12 +606,12 @@ export default function DashboardPage() {
           <div className="space-y-8 mb-8">
             
             {/* Professional Summary Cards */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Professional Summary</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Professional Summary</h3>
                 <button
                   onClick={() => toggleSection('professional-summary')}
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
                 >
                   <span>Details</span>
                   {expandedSections['professional-summary'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -623,7 +623,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold text-github">
                     {platforms.github.publicRepos || 0}
                   </div>
-                  <div className="text-sm text-gray-600">Projects</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Projects</div>
                   <div className="mt-1">
                     <Code className="h-4 w-4 text-github mx-auto" />
                   </div>
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold text-linkedin">
                     {platforms.linkedin.connectionCount || 0}
                   </div>
-                  <div className="text-sm text-gray-600">Connections</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Connections</div>
                   <div className="mt-1">
                     <Users className="h-4 w-4 text-linkedin mx-auto" />
                   </div>
@@ -643,7 +643,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold text-green-600">
                     {platforms.linkedin.experience?.length || 0}
                   </div>
-                  <div className="text-sm text-gray-600">Experience</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Experience</div>
                   <div className="mt-1">
                     <Briefcase className="h-4 w-4 text-green-600 mx-auto" />
                   </div>
@@ -653,7 +653,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold text-purple-600">
                     {platforms.linkedin.skills?.length || 0}
                   </div>
-                  <div className="text-sm text-gray-600">Skills</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Skills</div>
                   <div className="mt-1">
                     <Award className="h-4 w-4 text-purple-600 mx-auto" />
                   </div>
@@ -664,36 +664,36 @@ export default function DashboardPage() {
                 <div className="mt-6 pt-6 border-t">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Technical Profile</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Technical Profile</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">GitHub Score:</span>
+                          <span className="text-gray-600 dark:text-gray-400">GitHub Score:</span>
                           <span className="font-medium">{platforms.github.score}/100</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Total Stars:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Total Stars:</span>
                           <span className="font-medium">{platforms.github.totalStars || 0}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Followers:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Followers:</span>
                           <span className="font-medium">{platforms.github.followers || 0}</span>
                         </div>
                       </div>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Professional Profile</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Professional Profile</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">LinkedIn Score:</span>
+                          <span className="text-gray-600 dark:text-gray-400">LinkedIn Score:</span>
                           <span className="font-medium">{platforms.linkedin.score}/100</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Resume Score:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Resume Score:</span>
                           <span className="font-medium">{platforms.resume.score}/100</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Education:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Education:</span>
                           <span className="font-medium">{platforms.linkedin.education?.length || 0} degrees</span>
                         </div>
                       </div>
@@ -705,12 +705,12 @@ export default function DashboardPage() {
 
             {/* LinkedIn Detailed Analysis */}
             {platforms.linkedin.connected && ((platforms.linkedin.strengths?.length || 0) > 0 || (platforms.linkedin.weaknesses?.length || 0) > 0) && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900">LinkedIn Profile Analysis</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">LinkedIn Profile Analysis</h3>
                   <button
                     onClick={() => toggleSection('linkedin-analysis')}
-                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
                   >
                     <span>Details</span>
                     {expandedSections['linkedin-analysis'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -721,15 +721,15 @@ export default function DashboardPage() {
                   {/* Strengths */}
                   {platforms.linkedin.strengths && platforms.linkedin.strengths.length > 0 && (
                     <div>
-                      <h4 className="flex items-center space-x-2 font-medium text-green-700 mb-3">
+                      <h4 className="flex items-center space-x-2 font-medium text-green-700 dark:text-green-400 mb-3">
                         <CheckCircle className="h-5 w-5" />
                         <span>Strengths</span>
                       </h4>
                       <div className="space-y-2">
                         {platforms.linkedin.strengths.map((strength, index) => (
-                          <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 rounded">
-                            <CheckSquare className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-sm text-green-800">{strength}</span>
+                          <div key={index} className="flex items-start space-x-3 p-2 bg-green-50 dark:bg-green-950/50 rounded">
+                            <CheckSquare className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-green-800 dark:text-green-300">{strength}</span>
                           </div>
                         ))}
                       </div>
@@ -739,15 +739,15 @@ export default function DashboardPage() {
                   {/* Weaknesses */}
                   {platforms.linkedin.weaknesses && platforms.linkedin.weaknesses.length > 0 && (
                     <div>
-                      <h4 className="flex items-center space-x-2 font-medium text-yellow-700 mb-3">
+                      <h4 className="flex items-center space-x-2 font-medium text-yellow-700 dark:text-yellow-400 mb-3">
                         <AlertTriangle className="h-5 w-5" />
                         <span>Areas for Improvement</span>
                       </h4>
                       <div className="space-y-2">
                         {platforms.linkedin.weaknesses.map((weakness, index) => (
-                          <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 rounded">
-                            <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-sm text-yellow-800">{weakness}</span>
+                          <div key={index} className="flex items-start space-x-3 p-2 bg-yellow-50 dark:bg-yellow-950/50 rounded">
+                            <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-yellow-800 dark:text-yellow-300">{weakness}</span>
                           </div>
                         ))}
                       </div>
@@ -757,15 +757,15 @@ export default function DashboardPage() {
                 
                 {expandedSections['linkedin-analysis'] && platforms.linkedin.suggestions && platforms.linkedin.suggestions.length > 0 && (
                   <div className="mt-6 pt-6 border-t">
-                    <h4 className="flex items-center space-x-2 font-medium text-blue-700 mb-3">
+                    <h4 className="flex items-center space-x-2 font-medium text-blue-700 dark:text-blue-400 mb-3">
                       <Lightbulb className="h-5 w-5" />
                       <span>Detailed Recommendations</span>
                     </h4>
                     <div className="grid grid-cols-1 gap-3">
                       {platforms.linkedin.suggestions.map((suggestion, index) => (
-                        <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                          <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-blue-800">{suggestion}</span>
+                        <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg">
+                          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-blue-800 dark:text-blue-300">{suggestion}</span>
                         </div>
                       ))}
                     </div>
@@ -778,12 +778,12 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
               {/* Score Breakdown Pie Chart */}
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Profile Score Distribution</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Profile Score Distribution</h3>
                   <button
                     onClick={() => toggleSection('score-breakdown')}
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
                   >
                     {expandedSections['score-breakdown'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </button>
@@ -834,9 +834,9 @@ export default function DashboardPage() {
                             className="w-3 h-3 rounded-full" 
                             style={{ backgroundColor: item.color }}
                           ></div>
-                          <span className="text-sm text-gray-700">{item.name}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{item.name}</span>
                           {!item.connected && (
-                            <span className="text-xs text-gray-400">(Not connected)</span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">(Not connected)</span>
                           )}
                         </div>
                         <span className="text-sm font-medium">{item.value}/100</span>
@@ -847,9 +847,9 @@ export default function DashboardPage() {
               </div>
 
               {/* Improvement Suggestions */}
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Improvement Suggestions</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Improvement Suggestions</h3>
                   <Lightbulb className="h-5 w-5 text-yellow-500" />
                 </div>
                 
@@ -859,7 +859,7 @@ export default function DashboardPage() {
                       <AlertTriangle className="h-5 w-5 text-github flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-sm font-medium text-github">Connect GitHub</h4>
-                        <p className="text-xs text-gray-600">Showcase your coding projects and technical skills</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Showcase your coding projects and technical skills</p>
                         <Link href="/dashboard/github" className="text-xs text-github hover:underline">Connect now →</Link>
                       </div>
                     </div>
@@ -872,7 +872,7 @@ export default function DashboardPage() {
                       {platforms.github.suggestions.slice(0, 3).map((suggestion, index) => (
                         <div key={index} className="flex items-start space-x-3 p-2 bg-github/5 rounded">
                           <Lightbulb className="h-4 w-4 text-github flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-gray-700">{suggestion}</p>
+                          <p className="text-xs text-gray-700 dark:text-gray-300">{suggestion}</p>
                         </div>
                       ))}
                     </div>
@@ -883,7 +883,7 @@ export default function DashboardPage() {
                       <AlertTriangle className="h-5 w-5 text-linkedin flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-sm font-medium text-linkedin">Analyze LinkedIn</h4>
-                        <p className="text-xs text-gray-600">Optimize your professional profile and network</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Optimize your professional profile and network</p>
                         <Link href="/dashboard/linkedin" className="text-xs text-linkedin hover:underline">Analyze now →</Link>
                       </div>
                     </div>
@@ -896,7 +896,7 @@ export default function DashboardPage() {
                       {platforms.linkedin.suggestions.slice(0, 3).map((suggestion, index) => (
                         <div key={index} className="flex items-start space-x-3 p-2 bg-linkedin/5 rounded">
                           <Lightbulb className="h-4 w-4 text-linkedin flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-gray-700">{suggestion}</p>
+                          <p className="text-xs text-gray-700 dark:text-gray-300">{suggestion}</p>
                         </div>
                       ))}
                     </div>
@@ -907,7 +907,7 @@ export default function DashboardPage() {
                       <AlertTriangle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-sm font-medium text-green-600">Upload Resume</h4>
-                        <p className="text-xs text-gray-600">Get ATS compatibility analysis and improvement tips</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Get ATS compatibility analysis and improvement tips</p>
                         <Link href="/dashboard/resume" className="text-xs text-green-600 hover:underline">Upload now →</Link>
                       </div>
                     </div>
@@ -918,7 +918,7 @@ export default function DashboardPage() {
                       <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-sm font-medium text-blue-600">Keep Profiles Updated</h4>
-                        <p className="text-xs text-gray-600">Regular updates help maintain high scores and relevance</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Regular updates help maintain high scores and relevance</p>
                       </div>
                     </div>
                   )}
@@ -929,12 +929,12 @@ export default function DashboardPage() {
 
           {/* Language Distribution Chart for GitHub */}
           {platforms.github.connected && platforms.github.languages && Object.keys(platforms.github.languages).length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Programming Languages</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Programming Languages</h3>
                 <button
                   onClick={() => toggleSection('language-breakdown')}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors"
                 >
                   {expandedSections['language-breakdown'] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
@@ -959,9 +959,9 @@ export default function DashboardPage() {
               {expandedSections['language-breakdown'] && (
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                   {Object.entries(platforms.github.languages || {}).map(([language, count]) => (
-                    <div key={language} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm font-medium text-gray-700">{language}</span>
-                      <span className="text-sm text-gray-600">{count} repo{count !== 1 ? 's' : ''}</span>
+                    <div key={language} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{language}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{count} repo{count !== 1 ? 's' : ''}</span>
                     </div>
                   ))}
                 </div>
@@ -974,9 +974,9 @@ export default function DashboardPage() {
             
             {/* GitHub Repositories */}
             {(dashboardData?.data?.platforms?.github?.repositories?.length || 0) > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Top Repositories</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Top Repositories</h3>
                   <Link href="/dashboard/github" className="text-primary hover:text-primary/80 text-sm">
                     View all
                   </Link>
@@ -986,14 +986,14 @@ export default function DashboardPage() {
                     <div key={repo.githubId} className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center">
-                          <h4 className="text-sm font-medium text-gray-900">{repo.name}</h4>
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">{repo.name}</h4>
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
                             {repo.language}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 truncate">{repo.description}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{repo.description}</p>
                       </div>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 mr-1" />
                           {repo.stars}
@@ -1011,10 +1011,10 @@ export default function DashboardPage() {
 
             {/* Recommendations */}
             {(dashboardData?.data?.recommendations?.length || 0) > 0 && (
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">Recommendations</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recommendations</h3>
                     <Link href="/dashboard/recommendations" className="text-primary hover:text-primary/80 text-sm">
                       View all
                     </Link>
@@ -1023,7 +1023,7 @@ export default function DashboardPage() {
                     {(dashboardData?.data?.recommendations || []).slice(0, 3).map((rec: any) => (
                       <div key={rec._id} className="border-l-4 border-primary pl-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium text-gray-900">{rec.title}</h4>
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">{rec.title}</h4>
                           <span className={cn(
                             "text-xs px-2 py-1 rounded",
                             rec.priority === 'high' ? "bg-red-100 text-red-800" :
@@ -1033,7 +1033,7 @@ export default function DashboardPage() {
                             {rec.priority}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{rec.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rec.description}</p>
                       </div>
                     ))}
                   </div>
@@ -1045,26 +1045,26 @@ export default function DashboardPage() {
 
           {/* Getting Started Guide - Show when no data */}
           {(!(dashboardData?.data?.platforms?.github?.repositories?.length || 0) && !dashboardData?.data?.platforms?.resume?.uploaded && !(dashboardData?.data?.recommendations?.length || 0)) && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">
-              <h3 className="text-lg font-medium text-blue-900 mb-4">Get Started with ReviewMe</h3>
-              <p className="text-blue-700 mb-4">
+            <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mt-8">
+              <h3 className="text-lg font-medium text-blue-900 dark:text-blue-300 mb-4">Get Started with ReviewMe</h3>
+              <p className="text-blue-700 dark:text-blue-400 mb-4">
                 Start building your comprehensive professional profile by connecting your accounts and uploading your resume.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link href="/dashboard/github" className="bg-white p-4 rounded-lg hover:shadow-md transition-shadow">
+                <Link href="/dashboard/github" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
                   <Github className="h-8 w-8 text-github mb-2" />
-                  <h4 className="font-medium text-gray-900">Connect GitHub</h4>
-                  <p className="text-sm text-gray-600">Analyze your coding profile and repositories</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Connect GitHub</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Analyze your coding profile and repositories</p>
                 </Link>
-                <Link href="/dashboard/linkedin" className="bg-white p-4 rounded-lg hover:shadow-md transition-shadow">
+                <Link href="/dashboard/linkedin" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
                   <Linkedin className="h-8 w-8 text-linkedin mb-2" />
-                  <h4 className="font-medium text-gray-900">Add LinkedIn</h4>
-                  <p className="text-sm text-gray-600">Import your professional profile data</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Add LinkedIn</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Import your professional profile data</p>
                 </Link>
-                <Link href="/dashboard/resume" className="bg-white p-4 rounded-lg hover:shadow-md transition-shadow">
+                <Link href="/dashboard/resume" className="bg-white dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
                   <FileText className="h-8 w-8 text-green-600 mb-2" />
-                  <h4 className="font-medium text-gray-900">Upload Resume</h4>
-                  <p className="text-sm text-gray-600">Get ATS compatibility analysis</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Upload Resume</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Get ATS compatibility analysis</p>
                 </Link>
               </div>
             </div>

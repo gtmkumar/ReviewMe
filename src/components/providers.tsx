@@ -9,6 +9,7 @@ import OfflineSupport from './offline-support';
 import WebVitalsReporter from './web-vitals-reporter';
 import { SkipLink } from './accessibility';
 import OnboardingManager from './onboarding-manager';
+import { ThemeProvider } from '@/contexts/theme-context';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -45,17 +46,24 @@ export function Providers({ children, session }: ProvidersProps) {
   );
 
   return (
-    <SessionProvider session={session}>
-      <QueryClientProvider client={queryClient}>
-        <SkipLink />
-        {children}
-        <OnboardingManager />
-        <WebVitalsReporter />
-        <OfflineSupport />
-        <ReactQueryDevtools 
-          initialIsOpen={false}
-        />
-      </QueryClientProvider>
-    </SessionProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <SessionProvider session={session}>
+        <QueryClientProvider client={queryClient}>
+          <SkipLink />
+          {children}
+          <OnboardingManager />
+          <WebVitalsReporter />
+          <OfflineSupport />
+          <ReactQueryDevtools 
+            initialIsOpen={false}
+          />
+        </QueryClientProvider>
+      </SessionProvider>
+    </ThemeProvider>
   );
 }

@@ -180,7 +180,7 @@ export default function MentorsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNavigation />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -192,7 +192,7 @@ export default function MentorsPage() {
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/dashboard"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                 >
                   <ArrowLeft className="h-5 w-5" />
                   <span>Back to Dashboard</span>
@@ -207,15 +207,15 @@ export default function MentorsPage() {
             <div className="text-center mb-8">
               <div className="flex items-center justify-center space-x-3 mb-4">
                 <Users className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-bold text-gray-900">Find Your Mentor</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Find Your Mentor</h1>
               </div>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                 Connect with experienced professionals for personalized feedback and guidance on your career journey
               </p>
             </div>
           </div>
           {/* Search and Filters */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -226,7 +226,7 @@ export default function MentorsPage() {
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function MentorsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors",
-                showFilters ? "border-primary bg-primary/10 text-primary" : "border-gray-300 hover:bg-gray-50"
+                showFilters ? "border-primary bg-primary/10 text-primary" : "border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
               )}
             >
               <Filter className="h-5 w-5" />
@@ -250,16 +250,16 @@ export default function MentorsPage() {
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Expertise Area
                   </label>
                   <select
                     value={filters.expertise}
                     onChange={(e) => setFilters({ ...filters, expertise: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">All Areas</option>
                     {availableFilters.expertise.map((area) => (
@@ -270,13 +270,13 @@ export default function MentorsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Session Type
                   </label>
                   <select
                     value={filters.sessionType}
                     onChange={(e) => setFilters({ ...filters, sessionType: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">All Types</option>
                     {availableFilters.sessionTypes.map((type) => (
@@ -287,7 +287,7 @@ export default function MentorsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Min Price (KTokens)
                   </label>
                   <input
@@ -295,11 +295,11 @@ export default function MentorsPage() {
                     placeholder="89"
                     value={filters.minPrice}
                     onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Price (KTokens)
                   </label>
                   <input
@@ -307,14 +307,14 @@ export default function MentorsPage() {
                     placeholder="299"
                     value={filters.maxPrice}
                     onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={resetFilters}
-                  className="text-gray-600 hover:text-gray-800 text-sm font-medium"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium"
                 >
                   Reset Filters
                 </button>
@@ -332,8 +332,8 @@ export default function MentorsPage() {
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-              <p className="text-red-600">{error}</p>
+            <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8">
+              <p className="text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
@@ -352,17 +352,17 @@ export default function MentorsPage() {
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={!pagination.hasPrev}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     Previous
                   </button>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={!pagination.hasNext}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     Next
                   </button>
@@ -373,8 +373,8 @@ export default function MentorsPage() {
               {mentors.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No mentors found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No mentors found</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Try adjusting your search criteria or filters
                   </p>
                   <button
@@ -411,7 +411,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
   const lowestPrice = Math.min(...mentor.sessionTypes.map(st => st.price));
 
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700/50 hover:shadow-lg dark:hover:shadow-gray-600/50 transition-shadow">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start gap-4 mb-4">
@@ -431,22 +431,22 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
               {mentor.name}
             </h3>
-            <p className="text-sm text-gray-600 truncate">
+            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
               {mentor.role}
               {mentor.company && ` at ${mentor.company}`}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center">
                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span className="text-sm text-gray-600 ml-1">
+                <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
                   {mentor.rating.average > 0 ? mentor.rating.average.toFixed(1) : 'New'}
                 </span>
               </div>
               <span className="text-gray-300">•</span>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {mentor.totalSessions} sessions
               </span>
             </div>
@@ -454,7 +454,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
         </div>
 
         {/* Bio */}
-        <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">
           {mentor.bio}
         </p>
 
@@ -470,7 +470,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             </div>
           ))}
           {mentor.expertise.length > 3 && (
-            <span className="text-xs text-gray-500 px-2 py-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">
               +{mentor.expertise.length - 3} more
             </span>
           )}
@@ -478,18 +478,18 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
 
         {/* Session Types */}
         <div className="mb-4">
-          <p className="text-xs text-gray-500 mb-2">Available Sessions:</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Available Sessions:</p>
           <div className="space-y-1">
             {mentor.sessionTypes.slice(0, 2).map((session, index) => (
               <div key={index} className="flex justify-between items-center text-sm">
-                <span className="text-gray-700">{session.name}</span>
+                <span className="text-gray-700 dark:text-gray-300">{session.name}</span>
                 <span className="text-primary font-medium">
                   {session.price} tokens
                 </span>
               </div>
             ))}
             {mentor.sessionTypes.length > 2 && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 +{mentor.sessionTypes.length - 2} more types
               </p>
             )}
@@ -497,10 +497,10 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
           <div className="text-sm">
-            <span className="text-gray-500">From </span>
-            <span className="text-gray-900 font-medium">{lowestPrice} tokens</span>
+            <span className="text-gray-500 dark:text-gray-400">From </span>
+            <span className="text-gray-900 dark:text-white font-medium">{lowestPrice} tokens</span>
           </div>
           <Link
             href={`/dashboard/mentors/${mentor.id}`}

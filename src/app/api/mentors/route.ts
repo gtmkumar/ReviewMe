@@ -82,7 +82,8 @@ export async function GET(request: NextRequest) {
     }));
 
     const totalPages = Math.ceil(total / limit);
-
+    console.log(formattedMentors,'formattedMentorsformattedMentorsformattedMentors');
+    
     return NextResponse.json({
       mentors: formattedMentors,
       pagination: {
